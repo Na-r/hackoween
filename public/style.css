@@ -3,6 +3,6 @@
     src: url('http://127.0.0.1:9956/fonts/dejavu-fonts-ttf-2.37/ttf/DejaVuSansMono.ttf');
 }
 
-.p {
+.test {
     font-family: 'DejaVuSansMono', monospace;
 }
