@@ -57,9 +57,6 @@ a:link, a:visited {
     color:orchid
 }
 
-.sidebar:hover .text,
-.sidebar.hover .text{
-    text-shadow:0px -40px 0px rgba(255, 255, 255, 0);
-    transform:translateY(0%) translateZ(0) scale(1.1);
-    font-weight:600;
+a:hover {
+    font-weight:600; 
 }
