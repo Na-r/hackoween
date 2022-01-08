@@ -26,8 +26,11 @@
                 {{if .Login}}
                 <h1>Welcome, {{.Username}}!</h1>
                 {{else}}
-                <a class="sidebar-text" href="https://github.com/login/oauth/authorize?client_id=e3608b8becc8be75c377&redirect_uri=http://localhost:9956/oauth">
-                    Login with github
+                <a class="sidebar-text" href="https://github.com/login/oauth/authorize?client_id=e3608b8becc8be75c377&redirect_uri=http://localhost:9956/oauth/github">
+                    Login with GitHub
+                </a><br>
+                <a class="sidebar-text" href="https://gitlab.com/oauth/authorize?client_id=09e978b08b2056b0e7d98fd8af90a55f14038189473c162d82fa97e4bfe1b608&redirect_uri=http://localhost:9956/oauth/gitlab&response_type=code&scope=read_user">
+                    Login with GitLab
                 </a><br>
                 {{end}}
 
