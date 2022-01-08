@@ -1,6 +1,7 @@
 package main
 
 import (
+	"hack-o-ween-site/packages"
 	"html/template"
 	"log"
 	"net/http"
@@ -9,8 +10,9 @@ import (
 )
 
 type HTMLData struct {
-	Login    bool
-	Username string
+	Login     bool
+	Username  string
+	Countdown string
 }
 
 func HandleRequests(w http.ResponseWriter, r *http.Request) {
@@ -20,8 +22,9 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 	log.Println("PATH:", path)
 
 	data := HTMLData{
-		Login:    false,
-		Username: "testificate",
+		Login:     false,
+		Username:  "testificate",
+		Countdown: packages.Get_duration(),
 	}
 
 	// Empty path defaults to index.html
@@ -49,6 +52,7 @@ func fileExists(filename string) bool {
 }
 
 func main() {
+
 	http.HandleFunc("/", HandleRequests)
 
 	http.ListenAndServe(":9956", nil)
