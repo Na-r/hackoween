@@ -52,6 +52,8 @@ func main() {
 	http.HandleFunc("/", HandleRequests)
 	http.HandleFunc("/oauth/github", packages.GithubAuthenticationRedirect)
 	http.HandleFunc("/oauth/gitlab", packages.GitlabAuthenticationRedirect)
-
+	http.HandleFunc("/oauth/google", packages.GoogleAuthenticationLogin)
+	http.HandleFunc("/oauth/google/callback", packages.GoogleAuthenticationCallback)
+	//ackages.GoogleAuthenticationRedirect()
 	http.ListenAndServe(":9956", nil)
 }

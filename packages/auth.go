@@ -1,9 +1,11 @@
 package packages
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -12,9 +14,11 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+
+	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"golang.org/x/oauth2/gitlab"
-	_ "golang.org/x/oauth2/google"
+	"golang.org/x/oauth2/google"
 )
 
 const clientID_github = "e3608b8becc8be75c377"
@@ -22,6 +26,9 @@ const clientSecret_github = "edf9f8aea66771b6cd9077325c4c52799cb98710"
 
 const clientID_gitlab = "09e978b08b2056b0e7d98fd8af90a55f14038189473c162d82fa97e4bfe1b608"
 const clientSecret_gitlab = "c0022910a61977e536e6ad688723db34c538d2de549e99054db8d675c008b65f"
+
+const clientID_google = "68153534942-ktejgnej2ki284h3c17ljm314998ah3r.apps.googleusercontent.com"
+const clientSecret_google = "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"
 
 type OAuthAccessResponse struct {
 	AccessToken string `json:"access_token"`
@@ -192,6 +199,77 @@ func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+var google_oauthconf = &oauth2.Config{
+	RedirectURL:  "http://localhost:9956/oauth/google/callback",
+	ClientID:     clientID_google,
+	ClientSecret: clientSecret_google,
+	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.profile"},
+	Endpoint:     google.Endpoint,
+}
+
+func GoogleAuthenticationLogin(w http.ResponseWriter, r *http.Request) {
+
+	state, err := GenerateRandomStringURLSafe(12)
+	if err != nil {
+		log.Println("Error in Google Authentication RNG")
+		return
+	}
+
+	fmt.Println(state)
+	var expiration = time.Now().Add(365 * 24 * time.Hour)
+	cookie := http.Cookie{Name: "google_oauthstate", Value: state, Expires: expiration}
+	http.SetCookie(w, &cookie)
+
+	url := google_oauthconf.AuthCodeURL(state)
+
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+}
+
+func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
+	// Read oauthState from Cookie
+	oauthState, _ := r.Cookie("google_oauthstate")
+
+	if r.FormValue("state") != oauthState.Value {
+		log.Println("invalid oauth google state")
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
+	data, err := getUserDataFromGoogle(r.FormValue("code"))
+	if err != nil {
+		log.Println(err.Error())
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
+	// GetOrCreate User in your db.
+	// Redirect or response with a token.
+	// More code .....
+	fmt.Println(data)
+	fmt.Fprintf(w, "UserInfo: %s\n", data)
+}
+
+const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
+
+// Use code to get token and get user info from Google.
+func getUserDataFromGoogle(code string) ([]byte, error) {
+
+	token, err := google_oauthconf.Exchange(context.Background(), code)
+	if err != nil {
+		return nil, fmt.Errorf("code exchange wrong: %s", err.Error())
+	}
+	response, err := http.Get(oauthGoogleUrlAPI + token.AccessToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed getting user info: %s", err.Error())
+	}
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed read response: %s", err.Error())
+	}
+	return contents, nil
+}
+
 func addNewUser(id, name, username, pfp string) {
 	/* First generate the required parameters:
 	Session Key (ID + UNIX Time, Hashed)
@@ -199,8 +277,8 @@ func addNewUser(id, name, username, pfp string) {
 	*/
 
 	curr_time := time.Now().Unix()
-
 	session_key := ToSHA(id + strconv.FormatInt(curr_time, 10))
+
 	login_date := strings.Split(time.Now().String(), " ")[0]
 
 	log.Println("ID:", id)
