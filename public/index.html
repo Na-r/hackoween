@@ -23,6 +23,14 @@
 
         <div class="sidebar-container">
             <nav class="sidebar">
+                {{if .Login}}
+                <h1>Welcome, {{.Username}}!</h1>
+                {{else}}
+                <a class="sidebar-text" href="https://github.com/login/oauth/authorize?client_id=e3608b8becc8be75c377&redirect_uri=http://localhost:9956/oauth">
+                    Login with github
+                </a><br>
+                {{end}}
+
                 <a class="sidebar-text" href="style.css">Home</a><br>
                 <a class="sidebar-text" href="style.css">About</a><br>
                 <a class="sidebar-text" href="style.css">Stats</a><br>
