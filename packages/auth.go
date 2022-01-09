@@ -3,8 +3,11 @@ package packages
 import (
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	_ "hack-o-ween-site/packages/cookie"
+	"hack-o-ween-site/packages/random"
 	"log"
 	"net/http"
 	"os"
@@ -13,7 +16,6 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
-
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"golang.org/x/oauth2/gitlab"
@@ -33,16 +35,33 @@ type OAuthAccessResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
+type ErrorLevel uint8
+
+const (
+	Log ErrorLevel = iota
+	Panic
+	Fatal
+)
+
 func ToSHA(str string) string {
 	sha := sha256.Sum256([]byte(str))
 	return string(sha[:])
 }
 
-type GitHubData struct {
-	id         float64 `json:"id"`
-	name       string  `json:"name"`
-	login      string  `json:"login"`
-	avatar_url string  `json:"avatar_url"`
+func checkErr(err error, error_type ErrorLevel, desc string) {
+	if err != nil {
+		switch error_type {
+		case Log:
+			log.Printf("LOG | Error: %s\n%s", err.Error(), desc)
+
+		case Panic:
+			log.Panicf("PANIC | Error: %s\n%s", err.Error(), desc)
+
+		case Fatal:
+			log.Fatalf("FATAL | Error: %s\n%s", err.Error(), desc)
+
+		}
+	}
 }
 
 func GithubAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
@@ -106,16 +125,16 @@ func GithubAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, ok := user_info["id"]; !ok {
-		log.Println("Error Retrieving Gitlab User Info")
+		log.Println("Error Retrieving GitHub User Info")
 		return
 	} else if _, ok := user_info["name"]; !ok {
-		log.Println("Error Retrieving Gitlab User Info")
+		log.Println("Error Retrieving GitHub User Info")
 		return
 	} else if _, ok := user_info["login"]; !ok {
-		log.Println("Error Retrieving Gitlab User Info")
+		log.Println("Error Retrieving GitHub User Info")
 		return
 	} else if _, ok := user_info["avatar_url"]; !ok {
-		log.Println("Error Retrieving Gitlab User Info")
+		log.Println("Error Retrieving GitHub User Info")
 		return
 	}
 
@@ -126,13 +145,6 @@ func GithubAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
 	return
-}
-
-type GitLabData struct {
-	id         float64 `json:"id"`
-	name       string  `json:"name"`
-	username   string  `json:"username"`
-	avatar_url string  `json:"avatar_url"`
 }
 
 func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
@@ -204,16 +216,16 @@ func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, ok := user_info["id"]; !ok {
-		log.Println("Error Retrieving Gitlab User Info")
+		log.Println("Error Retrieving GitLab User Info")
 		return
 	} else if _, ok := user_info["name"]; !ok {
-		log.Println("Error Retrieving Gitlab User Info")
+		log.Println("Error Retrieving GitLab User Info")
 		return
 	} else if _, ok := user_info["username"]; !ok {
-		log.Println("Error Retrieving Gitlab User Info")
+		log.Println("Error Retrieving GitLab User Info")
 		return
 	} else if _, ok := user_info["avatar_url"]; !ok {
-		log.Println("Error Retrieving Gitlab User Info")
+		log.Println("Error Retrieving GitLab User Info")
 		return
 	}
 
@@ -235,7 +247,7 @@ var google_oauthconf = &oauth2.Config{
 
 func GoogleAuthenticationLogin(w http.ResponseWriter, r *http.Request) {
 
-	state, err := GenerateRandomStringURLSafe(12)
+	state, err := random.GenerateRandomStringURLSafe(12)
 	if err != nil {
 		log.Println("Error in Google Authentication RNG")
 		return
@@ -251,12 +263,6 @@ func GoogleAuthenticationLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
-type GoogleData struct {
-	id      int    `json:"id"`
-	name    string `json:"name"`
-	picture string `json:"picture"`
-}
-
 const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
 
 func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
@@ -264,38 +270,34 @@ func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
 	oauthState, _ := r.Cookie("google_oauthstate")
 
 	if r.FormValue("state") != oauthState.Value {
-		log.Println("invalid oauth google state")
+		log.Println("Invalid OAuth Google State")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 	code := r.FormValue("code")
 
 	token, err := google_oauthconf.Exchange(context.Background(), code)
-	if err != nil {
-		fmt.Errorf("code exchange wrong: %s", err.Error())
-		return
-	}
+	checkErr(err, Panic, "Failed Code Exchange")
+
 	res, err := http.Get(oauthGoogleUrlAPI + token.AccessToken)
-	if err != nil {
-		fmt.Errorf("failed getting user info: %s", err.Error())
-		return
-	}
+	checkErr(err, Panic, "Failed GET on Google User Info")
+
 	defer res.Body.Close()
 
 	var user_info map[string]interface{}
 	if err := json.NewDecoder(res.Body).Decode(&user_info); err != nil {
-		fmt.Println("ERROR 3:", err)
+		checkErr(err, Panic, "Failed JSON Decode on Google User Info")
 		return
 	}
 
 	if _, ok := user_info["id"]; !ok {
-		log.Println("Error Retrieving Gitlab User Info")
+		log.Println("Error Retrieving Google User Info")
 		return
 	} else if _, ok := user_info["name"]; !ok {
-		log.Println("Error Retrieving Gitlab User Info")
+		log.Println("Error Retrieving Google User Info")
 		return
 	} else if _, ok := user_info["picture"]; !ok {
-		log.Println("Error Retrieving Gitlab User Info")
+		log.Println("Error Retrieving Google User Info")
 		return
 	}
 
@@ -323,91 +325,79 @@ func addNewUser(id, name, username, pfp string) {
 	log.Printf("Session Key: %x\n", session_key)
 	log.Println("Login Date:", login_date)
 
+	db, err := sql.Open("sqlite3", "./foo.db")
+	checkErr(err, Fatal, "Failed Opening Database")
+	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT INTO foo (id, name, username, pfp, session_key, login_date) values(?, ?, ?, ?, ?, ?)")
+	checkErr(err, Fatal, "Failed Transaction Preparation")
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id, name, username, pfp, session_key, login_date)
+	checkErr(err, Fatal, "Failed Transaction Execution")
+
 	return
-
-	/*
-		db, err := sql.Open("sqlite3", "./foo.db")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer db.Close()
-
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		stmt, err := tx.Prepare("insert into bar(auth_token, session_key, last_login) values(?, ?, ?)")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer stmt.Close()
-		for i := 0; i < 100; i++ {
-			_, err = stmt.Exec(i, fmt.Sprintf("こんにちわ世界%03d", i))
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-		tx.Commit()
-
-		rows, err := db.Query("select id, name from foo")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer rows.Close()
-		for rows.Next() {
-			var id int
-			var name string
-			err = rows.Scan(&id, &name)
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println(id, name)
-		}
-		err = rows.Err()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		stmt, err = db.Prepare("select name from foo where id = ?")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer stmt.Close()
-		var name string
-		err = stmt.QueryRow("3").Scan(&name)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(name)
-
-		_, err = db.Exec("delete from foo")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		_, err = db.Exec("insert into foo(id, name) values(1, 'foo'), (2, 'bar'), (3, 'baz')")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		rows, err = db.Query("select id, name from foo")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer rows.Close()
-		for rows.Next() {
-			var id int
-			var name string
-			err = rows.Scan(&id, &name)
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println(id, name)
-		}
-		err = rows.Err()
-		if err != nil {
-			log.Fatal(err)
-		}
-		return*/
 }
+
+/*
+
+	rows, err := db.Query("select id, name from foo")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		var name string
+		err = rows.Scan(&id, &name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(id, name)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	stmt, err = db.Prepare("select name from foo where id = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	var name string
+	err = stmt.QueryRow("3").Scan(&name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(name)
+
+	_, err = db.Exec("delete from foo")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = db.Exec("insert into foo(id, name) values(1, 'foo'), (2, 'bar'), (3, 'baz')")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rows, err = db.Query("select id, name from foo")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		var name string
+		err = rows.Scan(&id, &name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(id, name)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return*/
