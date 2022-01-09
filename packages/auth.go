@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -37,6 +36,13 @@ type OAuthAccessResponse struct {
 func ToSHA(str string) string {
 	sha := sha256.Sum256([]byte(str))
 	return string(sha[:])
+}
+
+type GitHubData struct {
+	id         float64 `json:"id"`
+	name       string  `json:"name"`
+	login      string  `json:"login"`
+	avatar_url string  `json:"avatar_url"`
 }
 
 func GithubAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
@@ -99,13 +105,34 @@ func GithubAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if _, ok := user_info["id"]; !ok {
+		log.Println("Error Retrieving Gitlab User Info")
+		return
+	} else if _, ok := user_info["name"]; !ok {
+		log.Println("Error Retrieving Gitlab User Info")
+		return
+	} else if _, ok := user_info["login"]; !ok {
+		log.Println("Error Retrieving Gitlab User Info")
+		return
+	} else if _, ok := user_info["avatar_url"]; !ok {
+		log.Println("Error Retrieving Gitlab User Info")
+		return
+	}
+
 	id_f := user_info["id"].(float64)
 	id := fmt.Sprintf("%.0f", id_f) + "GH"
 	addNewUser(id, user_info["name"].(string),
 		user_info["login"].(string), user_info["avatar_url"].(string))
 
-	http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
 	return
+}
+
+type GitLabData struct {
+	id         float64 `json:"id"`
+	name       string  `json:"name"`
+	username   string  `json:"username"`
+	avatar_url string  `json:"avatar_url"`
 }
 
 func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
@@ -180,22 +207,21 @@ func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error Retrieving Gitlab User Info")
 		return
 	} else if _, ok := user_info["name"]; !ok {
-		log.Println("Error Retrieving Gitlab Access Info")
+		log.Println("Error Retrieving Gitlab User Info")
 		return
 	} else if _, ok := user_info["username"]; !ok {
-		log.Println("Error Retrieving Gitlab Access Info")
+		log.Println("Error Retrieving Gitlab User Info")
 		return
 	} else if _, ok := user_info["avatar_url"]; !ok {
-		log.Println("Error Retrieving Gitlab Access Info")
+		log.Println("Error Retrieving Gitlab User Info")
 		return
 	}
 
-	id_f := user_info["id"].(float64)
-	id := fmt.Sprintf("%.0f", id_f) + "GL"
+	id := fmt.Sprintf("%.0f", user_info["id"].(float64)) + "GL"
 	addNewUser(id, user_info["name"].(string),
 		user_info["username"].(string), user_info["avatar_url"].(string))
 
-	http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
 	return
 }
 
@@ -225,6 +251,14 @@ func GoogleAuthenticationLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
+type GoogleData struct {
+	id      int    `json:"id"`
+	name    string `json:"name"`
+	picture string `json:"picture"`
+}
+
+const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
+
 func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
 	// Read oauthState from Cookie
 	oauthState, _ := r.Cookie("google_oauthstate")
@@ -234,40 +268,41 @@ func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
-
-	data, err := getUserDataFromGoogle(r.FormValue("code"))
-	if err != nil {
-		log.Println(err.Error())
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-		return
-	}
-
-	// GetOrCreate User in your db.
-	// Redirect or response with a token.
-	// More code .....
-	fmt.Println(data)
-	fmt.Fprintf(w, "UserInfo: %s\n", data)
-}
-
-const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
-
-// Use code to get token and get user info from Google.
-func getUserDataFromGoogle(code string) ([]byte, error) {
+	code := r.FormValue("code")
 
 	token, err := google_oauthconf.Exchange(context.Background(), code)
 	if err != nil {
-		return nil, fmt.Errorf("code exchange wrong: %s", err.Error())
+		fmt.Errorf("code exchange wrong: %s", err.Error())
+		return
 	}
-	response, err := http.Get(oauthGoogleUrlAPI + token.AccessToken)
+	res, err := http.Get(oauthGoogleUrlAPI + token.AccessToken)
 	if err != nil {
-		return nil, fmt.Errorf("failed getting user info: %s", err.Error())
+		fmt.Errorf("failed getting user info: %s", err.Error())
+		return
 	}
-	defer response.Body.Close()
-	contents, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed read response: %s", err.Error())
+	defer res.Body.Close()
+
+	var user_info map[string]interface{}
+	if err := json.NewDecoder(res.Body).Decode(&user_info); err != nil {
+		fmt.Println("ERROR 3:", err)
+		return
 	}
-	return contents, nil
+
+	if _, ok := user_info["id"]; !ok {
+		log.Println("Error Retrieving Gitlab User Info")
+		return
+	} else if _, ok := user_info["name"]; !ok {
+		log.Println("Error Retrieving Gitlab User Info")
+		return
+	} else if _, ok := user_info["picture"]; !ok {
+		log.Println("Error Retrieving Gitlab User Info")
+		return
+	}
+
+	id := user_info["id"].(string) + "GG"
+	addNewUser(id, user_info["name"].(string), "", user_info["picture"].(string))
+
+	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
 }
 
 func addNewUser(id, name, username, pfp string) {
