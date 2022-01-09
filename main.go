@@ -9,9 +9,10 @@ import (
 )
 
 type HTMLData struct {
-	Login     bool
-	Username  string
-	Countdown string
+	Login      bool
+	Username   string
+	Countdown  string
+	HTMLheader template.HTML
 }
 
 func HandleRequests(w http.ResponseWriter, r *http.Request) {
@@ -20,10 +21,22 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 
 	//log.Println("PATH:", path)
 
+	header := template.HTML(
+		`<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Hack-o-Ween</title>
+		<link rel="stylesheet" href="style.css">
+	</head>`)
+
 	data := HTMLData{
-		Login:     false,
-		Username:  "testificate",
-		Countdown: packages.Get_duration(),
+		Login:      false,
+		Username:   "testificate",
+		Countdown:  packages.Get_duration(),
+		HTMLheader: header,
 	}
 
 	// Empty path defaults to index.html
