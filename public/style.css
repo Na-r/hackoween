@@ -39,6 +39,16 @@ body {
 .sidebar {
     text-align: center;
 }
+
+.countdown-clock{
+    width: 70%;
+}
+
+.countdown {
+    font-family: 'DejaVuSansMono', monospace;
+    text-align: center;
+    font-size: 32pt;
+}
  
 /*.main-container.sidebar-container.sidebar.sidebar-text.a {*/
 a:link, a:visited {
