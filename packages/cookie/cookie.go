@@ -1,8 +1,6 @@
 package cookie
 
 import (
-	"fmt"
-
 	"github.com/gorilla/sessions"
 )
 
@@ -13,5 +11,5 @@ var (
 )
 
 func init() {
-	fmt.Printf("%s\n", key)
+	//fmt.Printf("%s\n", key)
 }

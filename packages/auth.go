@@ -8,6 +8,7 @@ import (
 	"fmt"
 	_ "hack-o-ween-site/packages/cookie"
 	"hack-o-ween-site/packages/random"
+	_ "hack-o-ween-site/packages/storage"
 	"log"
 	"net/http"
 	"os"
