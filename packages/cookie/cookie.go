@@ -1,6 +1,8 @@
 package cookie
 
 import (
+	"net/http"
+
 	"github.com/gorilla/sessions"
 )
 
@@ -10,6 +12,20 @@ var (
 	store = sessions.NewCookieStore(key)
 )
 
-func init() {
-	//fmt.Printf("%s\n", key)
+const SESSION_NAME = "hack-o-ween"
+
+func GetCookie(name string, r *http.Request) interface{} {
+	session, _ := store.Get(r, SESSION_NAME)
+
+	if val, ok := session.Values[name]; !ok {
+		return nil
+	} else {
+		return val
+	}
+}
+
+func StoreCookie(name string, val interface{}, w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, SESSION_NAME)
+	session.Values[name] = val
+	session.Save(r, w)
 }

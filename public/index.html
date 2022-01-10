@@ -25,6 +25,9 @@
             <nav class="sidebar">
                 {{if .Login}}
                 <h1>Welcome, {{.Username}}!</h1>
+                <a class="sidebar-text" href="http://localhost:9956/sign-out" target="_self">
+                    Sign Out
+                </a><br>
                 {{else}}
                 <a class="sidebar-text" href="https://github.com/login/oauth/authorize?client_id=e3608b8becc8be75c377&redirect_uri=http://localhost:9956/oauth/github">
                     Login with GitHub
@@ -39,7 +42,7 @@
 
                 <a class="sidebar-text" href="style.css">Home</a><br>
                 <a class="sidebar-text" href="style.css">About</a><br>
-                <a class="sidebar-text" href="style.css">Stats</a><br>
+                <a class="sidebar-text" href="http://localhost:9956/calendar">Calendar</a><br>
             </nav>
         </div>
 

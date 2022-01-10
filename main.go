@@ -32,13 +32,6 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 		<link rel="stylesheet" href="style.css">
 	</head>`)
 
-	data := HTMLData{
-		Login:      false,
-		Username:   "testificate",
-		Countdown:  packages.Get_duration(),
-		HTMLheader: header,
-	}
-
 	// Empty path defaults to index.html
 	if path == "/" {
 		path = "/index"
@@ -49,8 +42,17 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, file)
 	} else if file = filepath.Join(dir, path+".html"); fileExists(file) { // Serve templated HTML
 		//log.Println("Serving HTML")
+
+		data := HTMLData{
+			Login:      packages.CheckExistingSession(r),
+			Username:   "testificate",
+			Countdown:  packages.Get_duration(),
+			HTMLheader: header,
+		}
+
 		tmpl := template.Must(template.ParseFiles(filepath.Join(dir, path+".html")))
 		tmpl.Execute(w, data)
+
 	}
 
 }
@@ -64,8 +66,8 @@ func fileExists(filename string) bool {
 }
 
 func main() {
-
 	http.HandleFunc("/", HandleRequests)
+	http.HandleFunc("/sign-out", packages.SignOutUser)
 	http.HandleFunc("/oauth/github", packages.GithubAuthenticationRedirect)
 	http.HandleFunc("/oauth/gitlab", packages.GitlabAuthenticationRedirect)
 	http.HandleFunc("/oauth/google", packages.GoogleAuthenticationLogin)

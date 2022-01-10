@@ -6,7 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "hack-o-ween-site/packages/cookie"
+	"hack-o-ween-site/packages/cookie"
 	"hack-o-ween-site/packages/random"
 	_ "hack-o-ween-site/packages/storage"
 	"log"
@@ -43,6 +43,10 @@ const (
 	Panic
 	Fatal
 )
+
+func init() {
+
+}
 
 func ToSHA(str string) string {
 	sha := sha256.Sum256([]byte(str))
@@ -102,8 +106,6 @@ func GithubAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	fmt.Println("Login Successful. Token is", t.AccessToken)
-
 	reqURL = "https://api.github.com/user"
 	req, err = http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
@@ -139,13 +141,14 @@ func GithubAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id_f := user_info["id"].(float64)
-	id := fmt.Sprintf("%.0f", id_f) + "GH"
-	addNewUser(id, user_info["name"].(string),
-		user_info["login"].(string), user_info["avatar_url"].(string))
+	id := fmt.Sprintf("%.0f", user_info["id"].(float64)) + "GH"
 
-	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
-	return
+	if CheckExistingUser(id) {
+		LoginUser(id, w, r)
+	} else {
+		addNewUser(id, user_info["name"].(string),
+			user_info["login"].(string), user_info["avatar_url"].(string), w, r)
+	}
 }
 
 func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
@@ -231,11 +234,13 @@ func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := fmt.Sprintf("%.0f", user_info["id"].(float64)) + "GL"
-	addNewUser(id, user_info["name"].(string),
-		user_info["username"].(string), user_info["avatar_url"].(string))
 
-	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
-	return
+	if CheckExistingUser(id) {
+		LoginUser(id, w, r)
+	} else {
+		addNewUser(id, user_info["name"].(string),
+			user_info["username"].(string), user_info["avatar_url"].(string), w, r)
+	}
 }
 
 var google_oauthconf = &oauth2.Config{
@@ -254,10 +259,7 @@ func GoogleAuthenticationLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(state)
-	var expiration = time.Now().Add(365 * 24 * time.Hour)
-	cookie := http.Cookie{Name: "google_oauthstate", Value: state, Expires: expiration}
-	http.SetCookie(w, &cookie)
+	cookie.StoreCookie("google_oauthstate", state, w, r)
 
 	url := google_oauthconf.AuthCodeURL(state)
 
@@ -268,9 +270,9 @@ const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_
 
 func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
 	// Read oauthState from Cookie
-	oauthState, _ := r.Cookie("google_oauthstate")
+	oauthState := cookie.GetCookie("google_oauthstate", r)
 
-	if r.FormValue("state") != oauthState.Value {
+	if r.FormValue("state") != oauthState {
 		log.Println("Invalid OAuth Google State")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
@@ -303,20 +305,18 @@ func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := user_info["id"].(string) + "GG"
-	addNewUser(id, user_info["name"].(string), "", user_info["picture"].(string))
 
-	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+	if CheckExistingUser(id) {
+		LoginUser(id, w, r)
+	} else {
+		addNewUser(id, user_info["name"].(string), "", user_info["picture"].(string), w, r)
+	}
 }
 
-func addNewUser(id, name, username, pfp string) {
-	/* First generate the required parameters:
-	Session Key (ID + UNIX Time, Hashed)
-	Last Login (Current Date as YYYY-MM-DD)
-	*/
+const AUTH_DATABASE = "./foo.db"
 
-	curr_time := time.Now().Unix()
-	session_key := ToSHA(id + strconv.FormatInt(curr_time, 10))
-
+func addNewUser(id, name, username, pfp string, w http.ResponseWriter, r *http.Request) {
+	session_key := generateSessionKey(id)
 	login_date := strings.Split(time.Now().String(), " ")[0]
 
 	log.Println("ID:", id)
@@ -326,8 +326,8 @@ func addNewUser(id, name, username, pfp string) {
 	log.Printf("Session Key: %x\n", session_key)
 	log.Println("Login Date:", login_date)
 
-	db, err := sql.Open("sqlite3", "./foo.db")
-	checkErr(err, Fatal, "Failed Opening Database")
+	db, err := sql.Open("sqlite3", AUTH_DATABASE)
+	checkErr(err, Fatal, "Failed Opening Auth Database")
 	defer db.Close()
 
 	stmt, err := db.Prepare("INSERT INTO foo (id, name, username, pfp, session_key, login_date) values(?, ?, ?, ?, ?, ?)")
@@ -337,7 +337,94 @@ func addNewUser(id, name, username, pfp string) {
 	_, err = stmt.Exec(id, name, username, pfp, session_key, login_date)
 	checkErr(err, Fatal, "Failed Transaction Execution")
 
-	return
+	cookie.StoreCookie("session_key", session_key, w, r)
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
+func generateSessionKey(id string) string {
+	return ToSHA(id + strconv.FormatInt(time.Now().Unix(), 10))
+}
+
+func CheckExistingUser(id string) bool {
+	db, err := sql.Open("sqlite3", AUTH_DATABASE)
+	checkErr(err, Fatal, "Failed Opening Auth Database")
+	defer db.Close()
+
+	stmt, err := db.Prepare("SELECT EXISTS(SELECT 1 FROM foo WHERE id = ?)")
+	checkErr(err, Fatal, "Failed Transaction Preparation")
+	defer stmt.Close()
+
+	var exists int
+	stmt.QueryRow(id).Scan(&exists)
+
+	if exists == 1 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func CheckExistingSession(r *http.Request) bool {
+	session_key := cookie.GetCookie("session_key", r)
+	if session_key == nil {
+		return false
+	}
+
+	db, err := sql.Open("sqlite3", AUTH_DATABASE)
+	checkErr(err, Fatal, "Failed Opening Auth Database")
+	defer db.Close()
+
+	stmt, err := db.Prepare("SELECT login_date FROM foo WHERE session_key = ?")
+	checkErr(err, Fatal, "Failed Transaction Preparation")
+	defer stmt.Close()
+
+	var login_date_str string
+	stmt.QueryRow(session_key).Scan(&login_date_str)
+
+	temp := strings.Split(login_date_str, "-")
+	temp_ints := []int{}
+	for _, str := range temp {
+		i, _ := strconv.Atoi(str)
+		temp_ints = append(temp_ints, i)
+	}
+
+	if len(temp_ints) < 3 {
+		return false
+	}
+
+	login_date := time.Date(temp_ints[0], time.Month(temp_ints[1]), temp_ints[2], 0, 0, 0, 0, time.Local)
+	since := time.Since(login_date)
+
+	if since.Hours() > time.Hour.Hours()*24*18 { // Session Expires in 18 Days
+		return false
+	} else {
+		return true
+	}
+}
+
+// "id" MUST be a valid user ID
+func LoginUser(id string, w http.ResponseWriter, r *http.Request) {
+	session_key := generateSessionKey(id)
+	login_date := strings.Split(time.Now().String(), " ")[0]
+
+	db, err := sql.Open("sqlite3", AUTH_DATABASE)
+	checkErr(err, Fatal, "Failed Opening Auth Database")
+	defer db.Close()
+
+	stmt, err := db.Prepare("UPDATE foo SET session_key=?, login_date=? WHERE id=?")
+	checkErr(err, Fatal, "Failed Transaction Preparation")
+	defer stmt.Close()
+
+	_, err = stmt.Exec(session_key, login_date, id)
+	checkErr(err, Fatal, "Failed Transaction Execution")
+
+	cookie.StoreCookie("session_key", session_key, w, r)
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
+func SignOutUser(w http.ResponseWriter, r *http.Request) {
+	cookie.StoreCookie("session_key", nil, w, r)
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
 /*
