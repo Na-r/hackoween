@@ -1,13 +1,58 @@
 package storage
 
 import (
+	"database/sql"
+	"fmt"
+	"hack-o-ween-site/packages/utils"
+	_ "hack-o-ween-site/packages/utils"
 	"io/fs"
 	"log"
 	"os"
 	"sync"
+	"time"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const STORAGE_DIR = "storage/"
+const DB = STORAGE_DIR+"HoW.db"
+
+const AUTH_TABLE = "Auth"
+const SETTINGS_TABLE = "Settings"
+const HOW_2022_TABLE = "HoW_2022"
+
+type ThemeType uint8
+const (
+	Dark ThemeType = iota
+	Light
+)
+
+type NameType uint8
+const (
+    Username NameType = iota
+    RealName
+	Anonymous
+)
+
+type UserSettings struct {
+	Theme ThemeType
+	NameSetting NameType
+}
+
+type DaysInfo struct {
+	Completed bool
+	PuzzlesSolved int
+	DateCompleted time.Time
+}
+
+type ExtraInfo struct {
+	Completed bool
+}
+
+type UserInfo struct {
+	Settings UserSettings
+	Days	[]DaysInfo
+}
 
 type UID_Struct struct {
 	mu      sync.Mutex
@@ -25,5 +70,54 @@ func init() {
 	if err != nil {
 		log.Fatalf("FATAL | Error Opening %s: %s\n", UID.file, err.Error())
 	}
+}
 
+func InsertIntoTable(table_name, cols string, args ...interface{}) {
+	db, err := sql.Open("sqlite3", DB)
+	utils.CheckErr(err, utils.Fatal, "Failed Opening Database")
+	defer db.Close()
+
+	if rune(cols[0]) != rune('(') {
+		cols = "(" + cols + ")"
+	}
+
+	vals := ""
+	for i := 0; i < len(args)-1; i++ {
+		vals += "?, "
+	}
+	vals = "(" + vals + "?)"
+
+	stmt, err := db.Prepare(fmt.Sprintf("INSERT INTO %s %s VALUES%s", table_name, cols, vals))
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Insertion Transaction Preparation for Table %s, Columns %s", table_name, cols))
+	defer stmt.Close()
+
+	_, err = stmt.Exec(args...)
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Insertion Transaction Execution for Table %s, Columns %s", table_name, cols))
+}
+
+func UpdateTable(table_name, arg_name string, arg_val interface{}, where_name string, where_val interface{}) {
+	db, err := sql.Open("sqlite3", DB)
+	utils.CheckErr(err, utils.Fatal, "Failed Opening Database")
+	defer db.Close()
+
+	stmt, err := db.Prepare(fmt.Sprintf("UPDATE %s SET %s=? WHERE %s=?", table_name, arg_name, where_name))
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Update Transaction Preparation for Table %s, Args %s", table_name, arg_name))
+	defer stmt.Close()
+
+	_, err = stmt.Exec(arg_val, where_val)
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Update Transaction Execution for Table %s, Args %s", table_name, arg_name))
+}
+
+func GetFromTable(table_name, return_name, where_name string, where_val interface{}) interface{} {
+	db, err := sql.Open("sqlite3", DB)
+	utils.CheckErr(err, utils.Fatal, "Failed Opening Database")
+	defer db.Close()
+
+	stmt, err := db.Prepare(fmt.Sprintf("SELECT %s FROM %s WHERE %s=?", return_name, table_name, where_name))
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Get Transaction Preparation for Table %s, Return Name %s", table_name, return_name))
+	defer stmt.Close()
+
+	var ret interface{}
+	stmt.QueryRow(where_val).Scan(&ret)
+	return ret
 }

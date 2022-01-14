@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"hack-o-ween-site/packages/cookie"
 	"hack-o-ween-site/packages/random"
+	"hack-o-ween-site/packages/storage"
 	_ "hack-o-ween-site/packages/storage"
+	"hack-o-ween-site/packages/utils"
 	"log"
 	"net/http"
 	"os"
@@ -36,37 +38,9 @@ type OAuthAccessResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-type ErrorLevel uint8
-
-const (
-	Log ErrorLevel = iota
-	Panic
-	Fatal
-)
-
-func init() {
-
-}
-
 func ToSHA(str string) string {
 	sha := sha256.Sum256([]byte(str))
 	return string(sha[:])
-}
-
-func checkErr(err error, error_type ErrorLevel, desc string) {
-	if err != nil {
-		switch error_type {
-		case Log:
-			log.Printf("LOG | Error: %s\n%s", err.Error(), desc)
-
-		case Panic:
-			log.Panicf("PANIC | Error: %s\n%s", err.Error(), desc)
-
-		case Fatal:
-			log.Fatalf("FATAL | Error: %s\n%s", err.Error(), desc)
-
-		}
-	}
 }
 
 func GithubAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
@@ -280,16 +254,16 @@ func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 
 	token, err := google_oauthconf.Exchange(context.Background(), code)
-	checkErr(err, Panic, "Failed Code Exchange")
+	utils.CheckErr(err, utils.Panic, "Failed Code Exchange")
 
 	res, err := http.Get(oauthGoogleUrlAPI + token.AccessToken)
-	checkErr(err, Panic, "Failed GET on Google User Info")
+	utils.CheckErr(err, utils.Panic,  "Failed GET on Google User Info")
 
 	defer res.Body.Close()
 
 	var user_info map[string]interface{}
 	if err := json.NewDecoder(res.Body).Decode(&user_info); err != nil {
-		checkErr(err, Panic, "Failed JSON Decode on Google User Info")
+		utils.CheckErr(err, utils.Panic,  "Failed JSON Decode on Google User Info")
 		return
 	}
 
@@ -313,32 +287,40 @@ func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-const AUTH_DATABASE = "./foo.db"
+const AUTH_DATABASE = storage.DB
 
-func addNewUser(id, name, username, pfp string, w http.ResponseWriter, r *http.Request) {
-	session_key := generateSessionKey(id)
+func addNewUser(auth_id, name, username, pfp string, w http.ResponseWriter, r *http.Request) {
+	session_key := generateSessionKey(auth_id)
 	login_date := strings.Split(time.Now().String(), " ")[0]
 
-	log.Println("ID:", id)
+	log.Println("AUTH_ID:", auth_id)
 	log.Println("Name:", name)
 	log.Println("Username:", username)
 	log.Println("Profile Pic:", pfp)
 	log.Printf("Session Key: %x\n", session_key)
 	log.Println("Login Date:", login_date)
 
-	db, err := sql.Open("sqlite3", AUTH_DATABASE)
-	checkErr(err, Fatal, "Failed Opening Auth Database")
-	defer db.Close()
+	storage.InsertIntoTable(storage.AUTH_TABLE, "(auth_id, name, username, pfp, session_key, login_date)", auth_id, name, username, pfp, session_key, login_date)
 
-	stmt, err := db.Prepare("INSERT INTO foo (id, name, username, pfp, session_key, login_date) values(?, ?, ?, ?, ?, ?)")
-	checkErr(err, Fatal, "Failed Transaction Preparation")
-	defer stmt.Close()
+	id_interface := storage.GetFromTable(storage.AUTH_TABLE, "id", "auth_id", auth_id)
+	var id int
+	if id_interface != nil {
+		id = int(id_interface.(int64))
+	} else {
+		log.Fatal("FATAL | Critical Error in addNewUser: id is nil.")
+	}
 
-	_, err = stmt.Exec(id, name, username, pfp, session_key, login_date)
-	checkErr(err, Fatal, "Failed Transaction Execution")
+	anon_name := makeAnonName(id)
+	log.Println("Anon Name:", anon_name)
+
+	storage.UpdateTable(storage.AUTH_TABLE, "anon_name", anon_name, "id", id)
 
 	cookie.StoreCookie("session_key", session_key, w, r)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
+func makeAnonName(id int) string {
+	return "Anon#"+strconv.Itoa(id)
 }
 
 func generateSessionKey(id string) string {
@@ -347,11 +329,11 @@ func generateSessionKey(id string) string {
 
 func CheckExistingUser(id string) bool {
 	db, err := sql.Open("sqlite3", AUTH_DATABASE)
-	checkErr(err, Fatal, "Failed Opening Auth Database")
+	utils.CheckErr(err, utils.Fatal, "Failed Opening Auth Database")
 	defer db.Close()
 
-	stmt, err := db.Prepare("SELECT EXISTS(SELECT 1 FROM foo WHERE id = ?)")
-	checkErr(err, Fatal, "Failed Transaction Preparation")
+	stmt, err := db.Prepare(fmt.Sprintf("SELECT EXISTS(SELECT 1 FROM %s WHERE id = ?)", storage.AUTH_TABLE))
+	utils.CheckErr(err, utils.Fatal, "Failed Transaction Preparation")
 	defer stmt.Close()
 
 	var exists int
@@ -370,16 +352,15 @@ func CheckExistingSession(r *http.Request) bool {
 		return false
 	}
 
-	db, err := sql.Open("sqlite3", AUTH_DATABASE)
-	checkErr(err, Fatal, "Failed Opening Auth Database")
-	defer db.Close()
-
-	stmt, err := db.Prepare("SELECT login_date FROM foo WHERE session_key = ?")
-	checkErr(err, Fatal, "Failed Transaction Preparation")
-	defer stmt.Close()
-
+	login_date_interface := storage.GetFromTable(storage.AUTH_TABLE, "login_date", "session_key", session_key)
 	var login_date_str string
-	stmt.QueryRow(session_key).Scan(&login_date_str)
+
+	if login_date_interface != nil {
+		login_date_str = login_date_interface.(string)
+	} else {
+		log.Printf("LOG | nil login date from session key: %v", session_key)
+		return false
+	}
 
 	temp := strings.Split(login_date_str, "-")
 	temp_ints := []int{}
@@ -408,15 +389,16 @@ func LoginUser(id string, w http.ResponseWriter, r *http.Request) {
 	login_date := strings.Split(time.Now().String(), " ")[0]
 
 	db, err := sql.Open("sqlite3", AUTH_DATABASE)
-	checkErr(err, Fatal, "Failed Opening Auth Database")
+	utils.CheckErr(err, utils.Fatal, "Failed Opening Auth Database")
 	defer db.Close()
 
-	stmt, err := db.Prepare("UPDATE foo SET session_key=?, login_date=? WHERE id=?")
-	checkErr(err, Fatal, "Failed Transaction Preparation")
+	stmt, err := db.Prepare(fmt.Sprintf("UPDATE %s SET session_key=?, login_date=? WHERE id=?", storage.AUTH_TABLE))
+
+	utils.CheckErr(err, utils.Fatal, "Failed Transaction Preparation")
 	defer stmt.Close()
 
 	_, err = stmt.Exec(session_key, login_date, id)
-	checkErr(err, Fatal, "Failed Transaction Execution")
+	utils.CheckErr(err, utils.Fatal, "Failed Transaction Execution")
 
 	cookie.StoreCookie("session_key", session_key, w, r)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
