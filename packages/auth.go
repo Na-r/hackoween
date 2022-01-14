@@ -17,7 +17,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -126,7 +125,6 @@ func GithubAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("successful redirect to gitlab")
 	// First, we need to get the value of the `code` query param
 	err := r.ParseForm()
 	if err != nil {
@@ -288,8 +286,18 @@ func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 const AUTH_DATABASE = storage.DB
+const AUTH_ID_SALT = "P7HWnM!J#q5!D2y"
 
-func addNewUser(auth_id, name, username, pfp string, w http.ResponseWriter, r *http.Request) {
+func hashAuthID(auth_id_raw string) string {
+	return ToSHA(auth_id_raw + AUTH_ID_SALT)
+}
+
+func compareAuthID(auth_id_raw, auth_id string) bool {
+	return hashAuthID(auth_id_raw) == auth_id
+}
+
+func addNewUser(auth_id_raw, name, username, pfp string, w http.ResponseWriter, r *http.Request) {
+	auth_id := hashAuthID(auth_id_raw)
 	session_key := generateSessionKey(auth_id)
 	login_date := strings.Split(time.Now().String(), " ")[0]
 
@@ -323,27 +331,24 @@ func makeAnonName(id int) string {
 	return "Anon#"+strconv.Itoa(id)
 }
 
-func generateSessionKey(id string) string {
-	return ToSHA(id + strconv.FormatInt(time.Now().Unix(), 10))
+func generateSessionKey(auth_id string) string {
+	return ToSHA(auth_id + strconv.FormatInt(time.Now().Unix(), 10))
 }
 
-func CheckExistingUser(id string) bool {
+func CheckExistingUser(auth_id_raw string) bool {
+	auth_id := hashAuthID(auth_id_raw)
 	db, err := sql.Open("sqlite3", AUTH_DATABASE)
 	utils.CheckErr(err, utils.Fatal, "Failed Opening Auth Database")
 	defer db.Close()
 
-	stmt, err := db.Prepare(fmt.Sprintf("SELECT EXISTS(SELECT 1 FROM %s WHERE id = ?)", storage.AUTH_TABLE))
+	stmt, err := db.Prepare(fmt.Sprintf("SELECT EXISTS(SELECT 1 FROM %s WHERE auth_id = ?)", storage.AUTH_TABLE))
 	utils.CheckErr(err, utils.Fatal, "Failed Transaction Preparation")
 	defer stmt.Close()
 
 	var exists int
-	stmt.QueryRow(id).Scan(&exists)
+	stmt.QueryRow(auth_id).Scan(&exists)
 
-	if exists == 1 {
-		return true
-	} else {
-		return false
-	}
+	return exists == 1
 }
 
 func CheckExistingSession(r *http.Request) bool {
@@ -376,28 +381,25 @@ func CheckExistingSession(r *http.Request) bool {
 	login_date := time.Date(temp_ints[0], time.Month(temp_ints[1]), temp_ints[2], 0, 0, 0, 0, time.Local)
 	since := time.Since(login_date)
 
-	if since.Hours() > time.Hour.Hours()*24*18 { // Session Expires in 18 Days
-		return false
-	} else {
-		return true
-	}
+	return !(since.Hours() > time.Hour.Hours()*24*18) // Session Expires in 18 Days
 }
 
-// "id" MUST be a valid user ID
-func LoginUser(id string, w http.ResponseWriter, r *http.Request) {
-	session_key := generateSessionKey(id)
+// "auth_id" MUST be a valid user auth_id
+func LoginUser(auth_id_raw string, w http.ResponseWriter, r *http.Request) {
+	auth_id := hashAuthID(auth_id_raw)
+	session_key := generateSessionKey(auth_id)
 	login_date := strings.Split(time.Now().String(), " ")[0]
 
 	db, err := sql.Open("sqlite3", AUTH_DATABASE)
 	utils.CheckErr(err, utils.Fatal, "Failed Opening Auth Database")
 	defer db.Close()
 
-	stmt, err := db.Prepare(fmt.Sprintf("UPDATE %s SET session_key=?, login_date=? WHERE id=?", storage.AUTH_TABLE))
+	stmt, err := db.Prepare(fmt.Sprintf("UPDATE %s SET session_key=?, login_date=? WHERE auth_id=?", storage.AUTH_TABLE))
 
 	utils.CheckErr(err, utils.Fatal, "Failed Transaction Preparation")
 	defer stmt.Close()
 
-	_, err = stmt.Exec(session_key, login_date, id)
+	_, err = stmt.Exec(session_key, login_date, auth_id)
 	utils.CheckErr(err, utils.Fatal, "Failed Transaction Execution")
 
 	cookie.StoreCookie("session_key", session_key, w, r)
