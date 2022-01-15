@@ -301,7 +301,7 @@ func addNewUser(auth_id_raw, name, username, pfp string, w http.ResponseWriter, 
 	session_key := generateSessionKey(auth_id)
 	login_date := strings.Split(time.Now().String(), " ")[0]
 
-	log.Println("AUTH_ID:", auth_id)
+	log.Printf("AUTH_ID: %x\n", auth_id)
 	log.Println("Name:", name)
 	log.Println("Username:", username)
 	log.Println("Profile Pic:", pfp)
@@ -322,6 +322,9 @@ func addNewUser(auth_id_raw, name, username, pfp string, w http.ResponseWriter, 
 	log.Println("Anon Name:", anon_name)
 
 	storage.UpdateTable(storage.AUTH_TABLE, "anon_name", anon_name, "id", id)
+
+	storage.InsertIntoTable(storage.CURR_EVENT_TABLE, "id", id)
+	storage.InsertIntoTable(storage.SETTINGS_TABLE, "id", id)
 
 	cookie.StoreCookie("session_key", session_key, w, r)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
