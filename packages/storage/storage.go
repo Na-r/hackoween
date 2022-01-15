@@ -20,6 +20,7 @@ const DB = STORAGE_DIR+"HoW.db"
 const AUTH_TABLE = "Auth"
 const SETTINGS_TABLE = "Settings"
 const HOW_2022_TABLE = "HoW_2022"
+const CURR_EVENT_TABLE = HOW_2022_TABLE
 
 type ThemeType uint8
 const (
@@ -119,5 +120,51 @@ func GetFromTable(table_name, return_name, where_name string, where_val interfac
 
 	var ret interface{}
 	stmt.QueryRow(where_val).Scan(&ret)
+	return ret
+}
+
+func GetFromTable_AuthID(table_name, auth_id, return_name string) interface{} {
+	db, err := sql.Open("sqlite3", DB)
+	utils.CheckErr(err, utils.Fatal, "Failed Opening Database")
+	defer db.Close()
+
+	stmt_id, err := db.Prepare(fmt.Sprintf("SELECT id FROM %s WHERE auth_id=?", AUTH_TABLE))
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Get Transaction Preparation for Table %s, Return Name %s", AUTH_TABLE, "id"))
+	defer stmt_id.Close()
+
+	var id int
+	stmt_id.QueryRow(auth_id).Scan(&id)
+
+	stmt, err := db.Prepare(fmt.Sprintf("SELECT %s FROM %s WHERE id=?", return_name, table_name))
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Get Transaction Preparation for Table %s, Return Name %s", table_name, return_name))
+	defer stmt.Close()
+
+	var ret interface{}
+	stmt.QueryRow(id).Scan(&ret)
+	return ret
+}
+
+func GetFromTable_SessionKey(table_name, session_key, return_name string) interface{} {
+	db, err := sql.Open("sqlite3", DB)
+	utils.CheckErr(err, utils.Fatal, "Failed Opening Database")
+	defer db.Close()
+
+	stmt_id, err := db.Prepare(fmt.Sprintf("SELECT id FROM %s WHERE session_key=?", AUTH_TABLE))
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Get Transaction Preparation for Table %s, Return Name %s", AUTH_TABLE, "session_key"))
+	defer stmt_id.Close()
+
+	var id int
+	stmt_id.QueryRow(session_key).Scan(&id)
+
+	if id == 0 {
+		return nil
+	}
+
+	stmt, err := db.Prepare(fmt.Sprintf("SELECT %s FROM %s WHERE id=?", return_name, table_name))
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Get Transaction Preparation for Table %s, Return Name %s", table_name, return_name))
+	defer stmt.Close()
+
+	var ret interface{}
+	stmt.QueryRow(id).Scan(&ret)
 	return ret
 }
