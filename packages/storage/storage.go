@@ -168,3 +168,16 @@ func GetFromTable_SessionKey(table_name, session_key, return_name string) interf
 	stmt.QueryRow(id).Scan(&ret)
 	return ret
 }
+
+func DeleteFromTable(table_name, where_name string, where_val interface{}) {
+	db, err := sql.Open("sqlite3", DB)
+	utils.CheckErr(err, utils.Fatal, "Failed Opening Database")
+	defer db.Close()
+
+	stmt, err := db.Prepare(fmt.Sprintf("DELETE FROM %s WHERE %s=?", table_name, where_name))
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Deletion Transaction Preparation for Table %s, Where %s", table_name, where_name))
+	defer stmt.Close()
+
+	_, err = stmt.Exec(where_val)
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Deletion Transaction Update for Table %s, Where %s", table_name, where_name))
+}

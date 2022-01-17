@@ -414,6 +414,24 @@ func SignOutUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	session_key_interface := cookie.GetCookie("session_key", r)
+	var session_key string
+	if session_key_interface != nil {
+		session_key = session_key_interface.(string)
+	} else {
+		log.Panic("PANIC | session_key is nil in deletion")
+		return
+	}
+
+	id := storage.GetFromTable_SessionKey(storage.AUTH_TABLE, session_key, "id")
+
+	storage.DeleteFromTable(storage.CURR_EVENT_TABLE, "id", id)
+	storage.DeleteFromTable(storage.SETTINGS_TABLE, "id", id)
+	storage.DeleteFromTable(storage.AUTH_TABLE, "id", id)
+
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
 /*
 
 	rows, err := db.Query("select id, name from foo")
