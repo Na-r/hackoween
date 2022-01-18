@@ -9,7 +9,6 @@ import (
 	"hack-o-ween-site/packages/cookie"
 	"hack-o-ween-site/packages/random"
 	"hack-o-ween-site/packages/storage"
-	_ "hack-o-ween-site/packages/storage"
 	"hack-o-ween-site/packages/utils"
 	"log"
 	"net/http"
