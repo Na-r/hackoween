@@ -3,10 +3,44 @@
     src: url('http://127.0.0.1:9956/fonts/dejavu-fonts-ttf-2.37/ttf/DejaVuSansMono.ttf');
 }
 
+#grad {
+  background-image: linear-gradient(red, yellow, blue);
+}
+
+/* Scroll Bar */
+
+::-webkit-scrollbar {
+    background-color: #1b1e1f;
+    color: #ada69a;
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1C1C24;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #42474a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 body {
-    background: #1f1f2e;
+    /* background: #1f1f2e; */
     color: #FFF;
- }
+    background: url("bg.svg") no-repeat, url("bg2.svg");
+    background-size: 100% auto;
+    margin: 20px auto;
+    width: 75%;
+}
+
+@media only screen and (max-width: 1000px) {
+    body {
+        width: 95%;
+    }
+}
 
 .banner {
     font-family: 'DejaVuSansMono', monospace;
@@ -23,10 +57,43 @@ body {
     padding: 4px;
 }  
 
-.sidebar-container {
-    flex: 0.5;
+.topbar-container {
+    display: flex;
+    flex-wrap: wrap;
     border: 2px solid orange;
-} 
+    padding: 4px;
+    margin: 4px 0px;
+}
+
+.topbar {
+   justify-content: center;
+}
+
+.topbar a:hover {
+    /* color:#333; */
+}
+
+.topbar .topbar-link {
+    /* color: #777; */
+    /* text-decoration: none; */
+    /* padding-right: 18px; */
+    /* padding-left: 18px; */
+    /* font-size: 22px; */
+    /* display: inline-flex; */
+    padding: 20px;
+    margin: 0 .15em;
+}
+
+.topbar .topbar-text {
+    margin: 0 .15em;
+    display: block;
+    float: left;
+}
+
+li {
+    display: block;
+    float: left;
+}
 
 .text-heading {
     font-family: 'DejaVuSansMono', monospace;
@@ -34,10 +101,7 @@ body {
 
 .text {
     font-family: 'DejaVuSansMono', monospace;
-}
-
-.sidebar {
-    text-align: center;
+    /* font-size: 72pt; */
 }
 
 .countdown-clock{
@@ -50,22 +114,20 @@ body {
     font-size: 32pt;
 }
  
-/*.main-container.sidebar-container.sidebar.sidebar-text.a {*/
 a:link, a:visited {
-    font-size:24px;
+    font-size:26px;
     font-weight:300;
-    text-align:center;
-    position:relative;
-    height:40px;
+    text-align:left;
+    /* position:relative; */
+    height:70px;
     line-height:40px;
     margin-top:10px;
     overflow:hidden;
-    width:90%;
     margin-left:5%;
     cursor:pointer;
-    color:orchid
+    color:orange
 }
 
 a:hover {
-    font-weight:600; 
+    color: yellow
 }

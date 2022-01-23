@@ -4,48 +4,49 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark only">
     <title>Hack-o-Ween</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <header>
         <h1 class="banner">Hack-o-Ween</h1>
+        <div class="topbar-container">
+            <nav class="topbar">
+                <li><a class="topbar-link" href="style.css">Home</a></li>
+                <li><a class="topbar-link" href="style.css">About</a></li>
+                <li><a class="topbar-link" href="http://localhost:9956/calendar">Calendar</a><br></li>
+                <li><a class="topbar-link" href="/debug">Debug</a></li>
+
+                {{if .Login}}
+                <h1 class="topbar-text">Welcome, {{.Username}}!</h1>
+                <li><a class="topbar-link" href="http://localhost:9956/sign-out" target="_self">Sign Out</a></li>
+                {{else}}
+                <li><a class="topbar-link" href="https://github.com/login/oauth/authorize?client_id=e3608b8becc8be75c377&redirect_uri=http://localhost:9956/oauth/github">
+                    Login with GitHub
+                </a></li>
+                <li><a class="topbar-link" href="https://gitlab.com/oauth/authorize?client_id=09e978b08b2056b0e7d98fd8af90a55f14038189473c162d82fa97e4bfe1b608&redirect_uri=http://localhost:9956/oauth/gitlab&response_type=code&scope=read_user">
+                    Login with GitLab
+                </a></li>
+                <li><a class="topbar-link" href="http://localhost:9956/oauth/google">
+                    Login with Google
+                </a></li>
+                {{end}}
+
+
+            </nav>
+        </div>
     </header>
 
     <div class="main-container">
 
         <main class="text-container">
             <h2 class="text-heading">What is Hack-o-Ween?</h2>
-            <p class="text"> Lorem, ipsum dolor sit amet consectetur adipisicing elit. Consectetur harum temporibus eligendi odit quaerat dignissimos minus accusamus unde dolores molestias ducimus, incidunt vitae, culpa repudiandae, laborum suscipit labore error quibusdam.</p>
+            <p class="text">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Consectetur harum temporibus eligendi odit quaerat dignissimos minus accusamus unde dolores molestias ducimus, incidunt vitae, culpa repudiandae, laborum suscipit labore error quibusdam.</p>
             <h2 class="text-heading">About the Team</h2>
-            <p class="text"> Lorem, ipsum dolor sit amet consectetur adipisicing elit. Consectetur harum temporibus eligendi odit quaerat dignissimos minus accusamus unde dolores molestias ducimus, incidunt vitae, culpa repudiandae, laborum suscipit labore error quibusdam.</p>
+            <p class="text">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Consectetur harum temporibus eligendi odit quaerat dignissimos minus accusamus unde dolores molestias ducimus, incidunt vitae, culpa repudiandae, laborum suscipit labore error quibusdam.</p>
         </main>
 
-        <div class="sidebar-container">
-            <nav class="sidebar">
-                {{if .Login}}
-                <h1>Welcome, {{.Username}}!</h1>
-                <a class="sidebar-text" href="http://localhost:9956/sign-out" target="_self">
-                    Sign Out
-                </a><br>
-                {{else}}
-                <a class="sidebar-text" href="https://github.com/login/oauth/authorize?client_id=e3608b8becc8be75c377&redirect_uri=http://localhost:9956/oauth/github">
-                    Login with GitHub
-                </a><br>
-                <a class="sidebar-text" href="https://gitlab.com/oauth/authorize?client_id=09e978b08b2056b0e7d98fd8af90a55f14038189473c162d82fa97e4bfe1b608&redirect_uri=http://localhost:9956/oauth/gitlab&response_type=code&scope=read_user">
-                    Login with GitLab
-                </a><br>
-                <a class="sidebar-text" href="http://localhost:9956/oauth/google">
-                    Login with Google
-                </a><br>
-                {{end}}
-
-                <a class="sidebar-text" href="style.css">Home</a><br>
-                <a class="sidebar-text" href="style.css">About</a><br>
-                <a class="sidebar-text" href="http://localhost:9956/calendar">Calendar</a><br>
-                <a class="sidebar-text" href="/debug">Debug</a><br>
-            </nav>
-        </div>
 
     </div>
 </body>
