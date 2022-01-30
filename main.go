@@ -3,34 +3,26 @@ package main
 import (
 	"hack-o-ween-site/packages"
 	"html/template"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
-type HTMLData struct {
-	Login      bool
-	Username   string
-	Countdown  string
-	HTMLheader template.HTML
+func getTextInFile(fn string) string {
+	bytes, err := ioutil.ReadFile(fn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(bytes)
 }
+
+var templates_dir = "templates/"
 
 func HandleRequests(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	dir := "public/"
-
-	//log.Println("PATH:", path)
-
-	header := template.HTML(
-		`<!DOCTYPE html>
-	<html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Hack-o-Ween</title>
-		<link rel="stylesheet" href="style.css">
-	</head>`)
 
 	// Empty path defaults to index.html
 	if path == "/" {
@@ -43,15 +35,17 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 	} else if file = filepath.Join(dir, path+".html"); fileExists(file) { // Serve templated HTML
 		//log.Println("Serving HTML")
 
-		data := HTMLData{
-			Login:      packages.CheckExistingSession(r),
-			Username:   "testificate",
-			Countdown:  packages.Get_duration(),
-			HTMLheader: header,
-		}
+		m := make(map[string]interface{})
+		m["Username"] = "Testificate"
+		m["Login"] = packages.CheckExistingSession(r)
+		m["Countdown"] = packages.Get_duration()
 
-		tmpl := template.Must(template.ParseFiles(filepath.Join(dir, path+".html")))
-		tmpl.Execute(w, data)
+		templates := getFilesInDir(templates_dir, ".html")
+		templates = append(templates[:1], templates...)
+		templates[0] = filepath.Join(dir, path+".html")
+
+		tmpl := template.Must(template.ParseFiles(templates...))
+		tmpl.Execute(w, m)
 
 	}
 
@@ -65,6 +59,16 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
+func getFilesInDir(dir, ext string) (ret []string){
+	files, _ := ioutil.ReadDir(templates_dir)
+	for _, file := range files {
+		if filepath.Ext(file.Name()) == ext {
+			ret = append(ret, filepath.Join(templates_dir, file.Name()))
+		}
+	}
+	return
+}
+
 func main() {
 	http.HandleFunc("/", HandleRequests)
 	http.HandleFunc("/sign-out", packages.SignOutUser)
@@ -74,6 +78,5 @@ func main() {
 	http.HandleFunc("/oauth/google/callback", packages.GoogleAuthenticationCallback)
 
 	http.HandleFunc("/debug", packages.DebugButton)
-	//ackages.GoogleAuthenticationRedirect()
 	http.ListenAndServe(":9956", nil)
 }

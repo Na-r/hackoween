@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{template "Meta" .}}
+    <title>HoW-Login</title>
+</head>
+<body>
+    {{template "Header" .}}
+    <main>
+        <div class="block">
+            <div class="section">
+                <p>User Authentication is handled via external services. Only your name and ID are saved to our servers, in order to display your name on our leaderboards and authenticate you.</p>
+            </div>
+            <div class="login-links">
+                <ul>
+                <li><a href="https://github.com/login/oauth/authorize?client_id=e3608b8becc8be75c377&redirect_uri=http://localhost:9956/oauth/github">Login with GitHub</a></li>
+                <li><a href="https://gitlab.com/oauth/authorize?client_id=09e978b08b2056b0e7d98fd8af90a55f14038189473c162d82fa97e4bfe1b608&redirect_uri=http://localhost:9956/oauth/gitlab&response_type=code&scope=read_user">Login with GitLab</a></li>
+                <li><a href="http://localhost:9956/oauth/google">Login with Google</a></li>
+                </ul>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
