@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"hack-o-ween-site/packages/utils"
-	_ "hack-o-ween-site/packages/utils"
 	"io/fs"
 	"log"
 	"os"
@@ -150,7 +149,7 @@ func GetFromTable_SessionKey(table_name, session_key, return_name string) interf
 	defer db.Close()
 
 	stmt_id, err := db.Prepare(fmt.Sprintf("SELECT id FROM %s WHERE session_key=?", AUTH_TABLE))
-	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Get Transaction Preparation for Table %s, Return Name %s", AUTH_TABLE, "session_key"))
+	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Get Transaction Preparation for Table %s, Return Name %s", AUTH_TABLE, "id"))
 	defer stmt_id.Close()
 
 	var id int
