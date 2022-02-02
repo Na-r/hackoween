@@ -3,31 +3,28 @@
         <h1 class="banner">Hack-o-Ween</h1>
         <div class="topbar-container">
             <span class="topbar-block"><nav>
-                <li><a class="topbar-link" href="/">Home</a></li>
-                <li><a class="topbar-link" href="style.css">About</a></li>
-                <li><a class="topbar-link" href="/calendar">Calendar</a><br></li>
-                <li><a class="topbar-link" href="/debug">Debug</a></li>
-                <!-- {{if .Login}} -->
-                <!-- <h1 class="topbar-text">Welcome, {{.Username}}!</h1> -->
-                <!-- <li><a class="topbar-link" href="/sign-out" target="_self">Sign Out</a></li> -->
-                <!-- {{else}} -->
-                <!-- <li><a class="topbar-link" href="/login">Login</a></li> -->
-                <!-- {{end}} -->
+                <a class="topbar-link" href="/">Home</a>
+                <a class="topbar-link" href="style.css">About</a>
+                <a class="topbar-link" href="/calendar">Calendar</a>
+                <a class="topbar-link" href="/debug">Debug</a>
             </nav></span>
-            <span class="topbarlogin-block">
-            <!--     {{if .Login}} -->
-            <!--     <div class="dropdown"> -->
-            <!--         <span>Mouse over me</span> -->
-            <!--         <div class="dropdown-content"> -->
-            <!--             <p>Hello World!</p> -->
-            <!--             <a class="topbar-link" href="/sign-out" target="_self">Sign Out</a> -->
-            <!--         </div> -->
-            <!--     </div> -->
-            <!--     {{else}} -->
+            <span class="topbarlogin-block"{{if.Login}}style="min-width: 191px"{{end}}>
+                {{if .Login}}
+                <div class="dropdown">
+                    <span>
+                        <img class="topbar-pfp" title="user-profile-picture" src="{{.PFP}}" alt="" width="23" height="23"/>
+                        <div class="topbar-username">{{.Username}}</div>
+                    </span>
+                    <div class="dropdown-content">
+                        <a class="topbar-link" href="/settings" target="_self">Settings</a><br>
+                        <a class="topbar-link" href="/sign-out" target="_self">Sign Out</a>
+                    </div>
+                </div>
+                {{else}}
                 <div class="login">
                     <a class="topbar-link" href="/login">Login</a>
                 </div>
-            <!--     {{end}} -->
+                {{end}}
             </span>
         </div>
    </header>

@@ -2,6 +2,8 @@ package main
 
 import (
 	"hack-o-ween-site/packages"
+	"hack-o-ween-site/packages/cookie"
+	"hack-o-ween-site/packages/storage"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -34,9 +36,15 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, file)
 	} else if file = filepath.Join(dir, path+".html"); fileExists(file) { // Serve templated HTML
 		//log.Println("Serving HTML")
+		key := cookie.GetCookie("session_key", r)
+		session_key := ""
+		if key != nil {
+			session_key = key.(string)
+		}
 
 		m := make(map[string]interface{})
-		m["Username"] = "Testificate"
+		m["Username"] = storage.GetFromTable_SessionKey(storage.AUTH_TABLE, session_key, "username")
+		m["PFP"] = storage.GetFromTable_SessionKey(storage.AUTH_TABLE, session_key, "pfp")
 		m["Login"] = packages.CheckExistingSession(r)
 		m["Countdown"] = packages.Get_duration()
 
