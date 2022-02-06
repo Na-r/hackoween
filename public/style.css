@@ -147,7 +147,7 @@ a.topbar-link:hover {
     cursor: default;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 300px;
+    max-width: 500px;
     white-space: nowrap;
     text-align: center;
     align-self: center;
@@ -172,11 +172,6 @@ li {
 
 .text-heading {
     font-family: 'DejaVuSansMono', monospace;
-}
-
-.text {
-    font-family: 'DejaVuSansMono', monospace;
-    font-size: 72pt;
 }
 
 .countdown-clock{
