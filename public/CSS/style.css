@@ -234,6 +234,11 @@ li {
     text-align: justify;
 }
 
+.section h1 {
+    font-size: 26px;
+    margin: 0px;
+}
+
 /* In case checking for mobile */
 /* @media only screen and (orientation: portrait) { */
 /* } */
