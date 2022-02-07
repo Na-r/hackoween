@@ -42,9 +42,13 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 			session_key = key.(string)
 		}
 
+		row := storage.GetAllFromTable_SessionKey(storage.AUTH_TABLE, session_key)
+		var id int
+		var auth_id, name, username, anon_name, pfp, session_key_filler, login_date string
+		row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date)
 		m := make(map[string]interface{})
-		m["Username"] = storage.GetFromTable_SessionKey(storage.AUTH_TABLE, session_key, "username")
-		m["PFP"] = storage.GetFromTable_SessionKey(storage.AUTH_TABLE, session_key, "pfp")
+		m["Username"] = username
+		m["PFP"] = pfp
 		m["Login"] = packages.CheckExistingSession(r)
 		m["Countdown"] = packages.Get_duration()
 
@@ -84,6 +88,7 @@ func main() {
 	http.HandleFunc("/oauth/gitlab", packages.GitlabAuthenticationRedirect)
 	http.HandleFunc("/oauth/google", packages.GoogleAuthenticationLogin)
 	http.HandleFunc("/oauth/google/callback", packages.GoogleAuthenticationCallback)
+	http.HandleFunc("/settings/save", packages.SaveSettings)
 
 	http.HandleFunc("/debug", packages.DebugButton)
 	http.ListenAndServe(":9956", nil)
