@@ -1,4 +1,4 @@
-package packages
+package settings
 
 import (
 	"hack-o-ween-site/packages/cookie"

@@ -1,4 +1,4 @@
-package packages
+package countdown
 
 import (
 	"math"

@@ -1,4 +1,4 @@
-package packages
+package debug
 
 import (
 	"hack-o-ween-site/packages/storage"

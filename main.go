@@ -1,9 +1,12 @@
 package main
 
 import (
-	"hack-o-ween-site/packages"
+	"hack-o-ween-site/packages/auth"
 	"hack-o-ween-site/packages/cookie"
+	"hack-o-ween-site/packages/countdown"
+	"hack-o-ween-site/packages/debug"
 	"hack-o-ween-site/packages/storage"
+	"hack-o-ween-site/packages/settings"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -42,14 +45,16 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 		if key != nil {
 			session_key = key.(string)
 			row := storage.GetAllFromTable_SessionKey(storage.AUTH_TABLE, session_key)
-			var id int
-			var auth_id, name, username, anon_name, pfp, session_key_filler, login_date string
-			row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date)
+			if row != nil {
+				var id int
+				var auth_id, name, username, anon_name, pfp, session_key_filler, login_date string
+				row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date)
 
-			m["Username"] = username
-			m["PFP"] = pfp
-			m["Login"] = packages.CheckExistingSession(r)
-			m["Countdown"] = packages.Get_duration()
+				m["Username"] = username
+				m["PFP"] = pfp
+				m["Login"] = auth.CheckExistingSession(r)
+				m["Countdown"] = countdown.Get_duration()
+			}
 		}
 
 		templates := getFilesInDir(templates_dir, ".html")
@@ -83,13 +88,13 @@ func getFilesInDir(dir, ext string) (ret []string){
 
 func main() {
 	http.HandleFunc("/", HandleRequests)
-	http.HandleFunc("/sign-out", packages.SignOutUser)
-	http.HandleFunc("/oauth/github", packages.GithubAuthenticationRedirect)
-	http.HandleFunc("/oauth/gitlab", packages.GitlabAuthenticationRedirect)
-	http.HandleFunc("/oauth/google", packages.GoogleAuthenticationLogin)
-	http.HandleFunc("/oauth/google/callback", packages.GoogleAuthenticationCallback)
-	http.HandleFunc("/settings/save", packages.SaveSettings)
+	http.HandleFunc("/sign-out", auth.SignOutUser)
+	http.HandleFunc("/oauth/github", auth.GithubAuthenticationRedirect)
+	http.HandleFunc("/oauth/gitlab", auth.GitlabAuthenticationRedirect)
+	http.HandleFunc("/oauth/google", auth.GoogleAuthenticationLogin)
+	http.HandleFunc("/oauth/google/callback", auth.GoogleAuthenticationCallback)
+	http.HandleFunc("/settings/save", settings.SaveSettings)
 
-	http.HandleFunc("/debug", packages.DebugButton)
+	http.HandleFunc("/debug", debug.DebugButton)
 	http.ListenAndServe(":9956", nil)
 }
