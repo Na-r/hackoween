@@ -18,8 +18,9 @@ const DB = STORAGE_DIR+"HoW.db"
 
 const AUTH_TABLE = "Auth"
 const SETTINGS_TABLE = "Settings"
+const ALPHA_TABLE = "Alpha"
 const HOW_2022_TABLE = "HoW_2022"
-const CURR_EVENT_TABLE = HOW_2022_TABLE
+const CURR_EVENT_TABLE = ALPHA_TABLE
 
 type ThemeType uint8
 const (
