@@ -26,7 +26,7 @@
 body {
     /* background: #1f1f2e; */
     color: #FFF;
-    background: url("bg.svg") no-repeat, url("bg2.svg");
+    background: url("/CSS/graphics/bg.svg") no-repeat, url("/CSS/graphics/bg2.svg");
     background-size: 100% auto;
     margin: 20px auto;
     width: calc(100vw - 32px);
