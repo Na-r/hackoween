@@ -37,20 +37,20 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 	} else if file = filepath.Join(dir, path+".html"); fileExists(file) { // Serve templated HTML
 		//log.Println("Serving HTML")
 		key := cookie.GetCookie("session_key", r)
+		m := make(map[string]interface{})
 		session_key := ""
 		if key != nil {
 			session_key = key.(string)
-		}
+			row := storage.GetAllFromTable_SessionKey(storage.AUTH_TABLE, session_key)
+			var id int
+			var auth_id, name, username, anon_name, pfp, session_key_filler, login_date string
+			row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date)
 
-		row := storage.GetAllFromTable_SessionKey(storage.AUTH_TABLE, session_key)
-		var id int
-		var auth_id, name, username, anon_name, pfp, session_key_filler, login_date string
-		row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date)
-		m := make(map[string]interface{})
-		m["Username"] = username
-		m["PFP"] = pfp
-		m["Login"] = packages.CheckExistingSession(r)
-		m["Countdown"] = packages.Get_duration()
+			m["Username"] = username
+			m["PFP"] = pfp
+			m["Login"] = packages.CheckExistingSession(r)
+			m["Countdown"] = packages.Get_duration()
+		}
 
 		templates := getFilesInDir(templates_dir, ".html")
 		templates = append(templates[:1], templates...)
