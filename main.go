@@ -50,7 +50,7 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 				var auth_id, name, username, anon_name, pfp, session_key_filler, login_date string
 				row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date)
 
-				m["Username"] = username
+				m["Username"] = settings.GetUserName(session_key)
 				m["PFP"] = pfp
 				m["Login"] = auth.CheckExistingSession(r)
 				m["Countdown"] = countdown.Get_duration()

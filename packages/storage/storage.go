@@ -24,15 +24,15 @@ const CURR_EVENT_TABLE = ALPHA_TABLE
 
 type ThemeType uint8
 const (
-	Dark ThemeType = iota
-	Light
+	Dark ThemeType = 0
+	Light ThemeType = 1
 )
 
 type NameType uint8
 const (
-    Username NameType = iota
-    RealName
-	Anonymous
+    Username NameType = 0
+    RealName NameType = 1
+	Anonymous NameType = 2
 )
 
 type UserSettings struct {
