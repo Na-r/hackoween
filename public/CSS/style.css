@@ -46,14 +46,14 @@ body {
 }
 
 .main-container {
-    display: flex;
+    /* display: flex; */
 }
 
 .text-container {
     flex: 1;
     /* border: 2px solid orange; */
     padding: 4px;
-}  
+}
 
 .topbar-container {
     display: flex;
@@ -69,6 +69,7 @@ body {
     font-size: 26px;
     font-weight: 300;
     text-align: left;
+    /* margin-bottom: 16px; */
     /* height: 30px; */
 }
 
@@ -202,13 +203,9 @@ li {
     background-color: #21212b;
     border: 1px solid orange;
     border-top: 0px;
-    /* max-width: 160px; */
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     padding: 12px;
     z-index: 1;
-    align-content: center;
-    align-items: center;
-    text-align: center;
 }
 
 .dropdown-content a.topbar-link {
@@ -221,27 +218,81 @@ li {
 
 .block {
     display: flex;
-    max-width: 1100px;
+    flex-wrap: wrap;
+    max-width: 1050px;
     margin: 16px auto;
     background: #21212b;
     border-radius: 6px;
     border: 1px solid #efefef
 }
 
-.block .section {
+.section {
     flex: 1;
+    display: block;
     padding: 18px 16px;
     margin: 12px;
+    width: 100%;
     border-radius: 6px;
+}
+
+.block .row {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.block .section .code {
+    margin: 16px 0px;
+    padding: 12px;
+    position: relative;
+    display: inline-block;
+    background-color: #373748;
+    border: 1px solid whitesmoke;
+    vertical-align: middle;
 }
 
 .section p {
     text-align: justify;
+    margin: 0px;
+    margin-bottom: 6px;
 }
 
 .section h1 {
     font-size: 26px;
     margin: 0px;
+    margin-bottom: 8px;
+}
+
+.section h2 {
+    font-size: 22px;
+    margin: 0px;
+    margin-bottom: 8px;
+}
+
+ul li {
+    display: list-item;
+    list-style-type: square;
+    width: 100%;
+}
+
+input[type=text] {
+    background-color: #373748;
+    border: 1px solid whitesmoke;
+    font-family: 'DejaVuSansMono', monospace;
+    margin: 4px;
+}
+
+input[type=submit] {
+    padding: 5px;
+    background-color: #53536C;
+    border: 1px solid whitesmoke;
+    border-radius: 3px;
+    font-family: 'DejaVuSansMono', monospace;
+    margin: 4px;
+    color: whitesmoke;
+}
+
+input[type=submit]:hover {
+    border: 1px solid orange;
 }
 
 /* In case checking for mobile */
