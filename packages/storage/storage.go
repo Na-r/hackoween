@@ -22,6 +22,12 @@ const ALPHA_TABLE = "Alpha"
 const HOW_2022_TABLE = "HoW_2022"
 const CURR_EVENT_TABLE = ALPHA_TABLE
 
+type Event uint8
+const (
+	Alpha Event = 0
+	HoW_2022 Event = 1
+)
+
 type ThemeType uint8
 const (
 	Dark ThemeType = 0

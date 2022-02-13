@@ -95,6 +95,8 @@ func main() {
 	http.HandleFunc("/oauth/google/callback", auth.GoogleAuthenticationCallback)
 	http.HandleFunc("/settings/save", settings.SaveSettings)
 
+	puzzle.BindURLs("/alpha", storage.Alpha)
+
 	http.HandleFunc("/debug", debug.DebugButton)
 	http.ListenAndServe(":9956", nil)
 }
