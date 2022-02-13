@@ -52,6 +52,17 @@ func GetFileInDir(dir, fn string) *os.File {
 	return nil
 }
 
+// Returns a file's contents if it exists
+func GetFileContentsInDir(dir, fn string) string {
+	path := filepath.Join(dir, fn)
+	if FileExists(path) {
+		file, _ := ioutil.ReadFile(path)
+		return string(file)
+	}
+	return ""
+}
+
+
 func FileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
