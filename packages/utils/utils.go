@@ -31,6 +31,7 @@ func CheckErr(err error, error_type ErrorLevel, desc string) {
 	}
 }
 
+// Returns a slice of all the files in the directory matching the extension
 func GetFilesInDir(dir, ext string) (ret []string){
 	files, _ := ioutil.ReadDir(dir)
 	for _, file := range files {
@@ -41,6 +42,16 @@ func GetFilesInDir(dir, ext string) (ret []string){
 	return
 }
 
+// Returns a file if it exists
+func GetFileInDir(dir, fn string) *os.File {
+	path := filepath.Join(dir, fn)
+	if FileExists(path) {
+		file, _ := os.Open(path)
+		return file
+	}
+	return nil
+}
+
 func FileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
@@ -48,3 +59,4 @@ func FileExists(filename string) bool {
 	}
 	return !info.IsDir()
 }
+
