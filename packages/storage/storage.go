@@ -228,3 +228,39 @@ func DeleteFromTable(table_name, where_name string, where_val interface{}) {
 	_, err = stmt.Exec(where_val)
 	utils.CheckErr(err, utils.Fatal, fmt.Sprintf("Failed Deletion Transaction Update for Table %s, Where %s", table_name, where_name))
 }
+
+func GetUserName(session_key string) string {
+	row := GetAllFromTable_SessionKey(AUTH_TABLE, session_key)
+	var id int
+	var auth_id, name, username, anon_name, pfp, session_key_filler, login_date string
+	row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date)
+
+	name_setting_intf := GetFromTable_SessionKey(SETTINGS_TABLE, session_key, "name_type")
+	var name_setting NameType
+	if name_setting_intf != nil {
+		name_setting = NameType(name_setting_intf.(int64))
+	}
+
+	switch (name_setting) {
+	case Username:
+		if username != "" {
+			return username
+		} else if name != "" {
+			return name
+		} else {
+			return anon_name
+		}
+
+	case RealName:
+		if name != "" {
+			return name
+		} else {
+			return anon_name
+		}
+
+	case Anonymous:
+		return anon_name
+	}
+
+	return anon_name
+}
