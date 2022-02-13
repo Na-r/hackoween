@@ -5,13 +5,14 @@ import (
 	"hack-o-ween-site/packages/cookie"
 	"hack-o-ween-site/packages/countdown"
 	"hack-o-ween-site/packages/debug"
-	"hack-o-ween-site/packages/storage"
+	"hack-o-ween-site/packages/puzzle"
 	"hack-o-ween-site/packages/settings"
+	"hack-o-ween-site/packages/storage"
+	"hack-o-ween-site/packages/utils"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 )
 
@@ -34,10 +35,10 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 		path = "/index"
 	}
 
-	if file := filepath.Join(dir, path); fileExists(file) && filepath.Ext(file) != ".html" { // Serve a File
+	if file := filepath.Join(dir, path); utils.FileExists(file) && filepath.Ext(file) != ".html" { // Serve a File
 		//log.Println("Serving File")
 		http.ServeFile(w, r, file)
-	} else if file = filepath.Join(dir, path+".html"); fileExists(file) { // Serve templated HTML
+	} else if file = filepath.Join(dir, path+".html"); utils.FileExists(file) { // Serve templated HTML
 		//log.Println("Serving HTML")
 		key := cookie.GetCookie("session_key", r)
 		m := make(map[string]interface{})
@@ -57,7 +58,7 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		templates := getFilesInDir(templates_dir, ".html")
+		templates := utils.GetFilesInDir(templates_dir, ".html")
 		templates = append(templates[:1], templates...)
 		templates[0] = filepath.Join(dir, path+".html")
 
@@ -66,24 +67,6 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-}
-
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
-}
-
-func getFilesInDir(dir, ext string) (ret []string){
-	files, _ := ioutil.ReadDir(templates_dir)
-	for _, file := range files {
-		if filepath.Ext(file.Name()) == ext {
-			ret = append(ret, filepath.Join(templates_dir, file.Name()))
-		}
-	}
-	return
 }
 
 func main() {
