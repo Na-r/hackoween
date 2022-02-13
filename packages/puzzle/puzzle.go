@@ -27,7 +27,7 @@ func BindURLs(url string, e storage.Event) {
 }
 
 func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
-	// Parse the input to get the current puzzle
+	// Parse the URL to get the current puzzle
 	puzzle_slice := strings.Split(r.URL.Path, "/")
 	if len(puzzle_slice) < 2 {
 		return
@@ -44,7 +44,7 @@ func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
 	if key != nil {
 		session_key = key.(string)
 		if CheckUserSubmission(storage.Alpha, puzzle, session_key, r.FormValue("answer")) {
-			// Input is correct, nav to congrats page
+			// Input is correct, nav to congrats page, set time completed at
 		} else {
 			// Input is incorrect, nav to try again/etc page, set one minute timer
 		}
