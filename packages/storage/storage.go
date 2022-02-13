@@ -6,6 +6,7 @@ import (
 	"hack-o-ween-site/packages/utils"
 	"io/fs"
 	"log"
+	"math/rand"
 	"os"
 	"sync"
 	"time"
@@ -269,4 +270,35 @@ func GetUserName(session_key string) string {
 	}
 
 	return anon_name
+}
+
+func GetUserEventID(session_key string, e Event) int {
+	var table string
+	switch (e) {
+	case Alpha:
+		table = ALPHA_TABLE
+	case HoW_2022:
+		table = HOW_2022_TABLE
+	}
+
+	id_intf := GetFromTable_SessionKey(table, session_key, "event_id")
+
+	var event_id int
+	if id_intf != nil {
+		event_id = int(id_intf.(int64))
+	}
+
+	if event_id == -1 {
+		event_id = rand.Intn(1000)
+		id_intf = GetFromTable_SessionKey(table, session_key, "id")
+		var id int
+		if id_intf != nil {
+			id = int(id_intf.(int64))
+		} else {
+			return -100
+		}
+		UpdateTable(table, "event_id", event_id, "id", id)
+	}
+
+	return event_id
 }
