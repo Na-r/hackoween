@@ -17,10 +17,12 @@ func BindURLs(url string, e storage.Event) {
 	case storage.Alpha:
 		for i := 1; i <= 3; i++ {
 			http.HandleFunc(filepath.Join(url, "p" + strconv.Itoa(i), "submit"), GetUserSubmission)
+			http.HandleFunc(filepath.Join(url, "p" + strconv.Itoa(i), "input"), SendUserInput)
 		}
 	case storage.HoW_2022:
 		for i := 1; i <= 13; i++ {
 			http.HandleFunc(filepath.Join(url, "d" + strconv.Itoa(i), "submit"), GetUserSubmission)
+			http.HandleFunc(filepath.Join(url, "d" + strconv.Itoa(i), "input"), SendUserInput)
 		}
 
 	}
@@ -57,13 +59,15 @@ func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
 func CheckUserSubmission(e storage.Event, p int, session_key, answer_raw string) bool {
 	event_id := storage.GetUserEventID(session_key, e)
 
-	dir := "solutions/"
+	dir := ""
 	switch (e) {
 	case storage.Alpha:
-		dir += "alpha/"
+		dir = filepath.Join("storage", "puzzles", "alpha")
 	case storage.HoW_2022:
-		dir += "HoW2022/"
+		dir = filepath.Join("storage", "puzzles", "how_2022")
 	}
+
+	dir = filepath.Join(dir, strconv.Itoa(p), "output")
 
 	solution_raw := utils.GetFileContentsInDir(dir, strconv.Itoa(event_id))
 
@@ -74,4 +78,27 @@ func CheckUserSubmission(e storage.Event, p int, session_key, answer_raw string)
 	} else {
 		return solution_raw == answer_raw
 	}
+}
+
+func SendUserInput(w http.ResponseWriter, r *http.Request) {
+	// Parse the URL to get the current puzzle
+	puzzle_slice := strings.Split(r.URL.Path, "/")
+	if len(puzzle_slice) < 2 {
+		return
+	}
+
+	puzzle_str := puzzle_slice[2]
+	puzzle, err := strconv.Atoi(string(puzzle_str[1]))
+	if err != nil {
+		log.Println("ERROR: Invalid Puzzle URL")
+	}
+
+	key := cookie.GetCookie("session_key", r)
+	session_key := ""
+	if key != nil {
+		session_key = key.(string)
+		event_id := storage.GetUserEventID(session_key, storage.Alpha)
+		w.Write([]byte(utils.GetFileContentsInDir(filepath.Join("storage", "puzzles", "alpha", strconv.Itoa(puzzle), "input"), strconv.Itoa(event_id))))
+	}
+
 }
