@@ -268,7 +268,7 @@ li {
     margin-bottom: 8px;
 }
 
-ul {
+.section ul {
     margin-top: 0px;
 }
 
@@ -319,6 +319,7 @@ input[type=submit]:hover {
 
 .login-links li {
     width: 80%;
+    list-style-type: none;
     line-height: 1.5em;
 }
 
