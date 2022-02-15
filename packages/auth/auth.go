@@ -322,8 +322,10 @@ func addNewUser(auth_id_raw, name, username, pfp string, w http.ResponseWriter, 
 
 	storage.UpdateTable(storage.AUTH_TABLE, "anon_name", anon_name, "id", id)
 
-	storage.InsertIntoTable(storage.CURR_EVENT_TABLE, "id", id)
 	storage.InsertIntoTable(storage.SETTINGS_TABLE, "id", id)
+
+	storage.InsertIntoTable(storage.ALPHA_TABLE, "id", id)
+	storage.InsertIntoTable(storage.HOW_2022_TABLE, "id", id)
 
 	cookie.StoreCookie("session_key", session_key, w, r)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
