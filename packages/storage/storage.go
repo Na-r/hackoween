@@ -238,9 +238,9 @@ func DeleteFromTable(table_name, where_name string, where_val interface{}) {
 
 func GetUserName(session_key string) string {
 	row := GetAllFromTable_SessionKey(AUTH_TABLE, session_key)
-	var id int
+	var id, timeout int
 	var auth_id, name, username, anon_name, pfp, session_key_filler, login_date string
-	row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date)
+	row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date, &timeout)
 
 	name_setting_intf := GetFromTable_SessionKey(SETTINGS_TABLE, session_key, "name_type")
 	var name_setting NameType

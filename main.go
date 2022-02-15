@@ -47,9 +47,9 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 			session_key = key.(string)
 			row := storage.GetAllFromTable_SessionKey(storage.AUTH_TABLE, session_key)
 			if row != nil {
-				var id int
+				var id, timeout int
 				var auth_id, name, username, anon_name, pfp, session_key_filler, login_date string
-				row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date)
+				row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date, &timeout)
 
 				m["Username"] = storage.GetUserName(session_key)
 				m["PFP"] = pfp
