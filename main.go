@@ -55,7 +55,7 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 				m["PFP"] = pfp
 				m["Login"] = auth.CheckExistingSession(r)
 				m["Countdown"] = countdown.Get_duration()
-			}
+				m["Alpha_Parts"] = puzzle.GetPartsCompleted(storage.Alpha, session_key)			}
 		}
 
 		templates := utils.GetFilesInDir(templates_dir, ".html")

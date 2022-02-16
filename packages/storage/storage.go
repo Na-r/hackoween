@@ -4,10 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"hack-o-ween-site/packages/utils"
-	"io/fs"
-	"log"
 	"math/rand"
-	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -73,11 +71,12 @@ var UID UID_Struct = UID_Struct{
 	file:    "id.cdb",
 }
 
+var EVENT_TO_STRING map[Event]string
+
 func init() {
-	_, err := os.OpenFile(STORAGE_DIR+UID.file, os.O_RDONLY|os.O_CREATE, fs.ModePerm)
-	if err != nil {
-		log.Fatalf("FATAL | Error Opening %s: %s\n", UID.file, err.Error())
-	}
+	EVENT_TO_STRING = make(map[Event]string)
+	EVENT_TO_STRING[Alpha] = strings.ToLower(ALPHA_TABLE)
+	EVENT_TO_STRING[HoW_2022] = strings.ToLower(HOW_2022_TABLE)
 }
 
 func InsertIntoTable(table_name, cols string, args ...interface{}) {

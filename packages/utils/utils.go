@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"hack-o-ween-site/packages/cookie"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 )
@@ -71,3 +73,10 @@ func FileExists(filename string) bool {
 	return !info.IsDir()
 }
 
+func GetSessionKey(r *http.Request) string {
+	key := cookie.GetCookie("session_key", r)
+	if key != nil {
+		return key.(string)
+	}
+	return ""
+}

@@ -71,6 +71,9 @@ bacdbcadadbccdbaadbc    //102 - 2 = 100</pre>
                 </ul>
             </div>
         </div>
+
+{{if eq (index .Alpha_Parts 0) 0}}
+
         <div class="block" id="p1_answer">
             <div class="section">
             <h1>Happy Hacking!</h1>
@@ -79,6 +82,31 @@ bacdbcadadbccdbaadbc    //102 - 2 = 100</pre>
                     <input type="text" name="answer" maxlength="16" size="16"><input type="submit" value="Submit" accesskey="s">
             </div>
         </div>
+
+{{else if eq (index .Alpha_Parts 0) 1}}
+
+        <div class="block" id="p1_answer">
+            <div class="section">
+            <h1>;)</h1>
+                <p>Here's your <a href="/alpha/p1/input">input</a>, and you may submit your solution below.</p>
+                <form id="p1_answer" action="/alpha/p1/submit" method="post">
+                    <input type="text" name="answer" maxlength="16" size="16"><input type="submit" value="Submit" accesskey="s">
+            </div>
+        </div>
+
+{{else}}
+
+        <div class="block" id="p1_answer">
+            <div class="section">
+            <h1>You did it!!!!!!!!!</h1>
+                <p>Here's your <a href="/alpha/p1/input">input</a>, and you may submit your solution below.</p>
+                <form id="p1_answer" action="/alpha/p1/submit" method="post">
+                    <input type="text" name="answer" maxlength="16" size="16"><input type="submit" value="Submit" accesskey="s">
+            </div>
+        </div>
+
+
+{{end}}
     </div>
 </body>
 </html>
