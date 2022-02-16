@@ -4,6 +4,7 @@ import (
 	"hack-o-ween-site/packages/cookie"
 	"hack-o-ween-site/packages/storage"
 	"hack-o-ween-site/packages/utils"
+	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -41,35 +42,44 @@ func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
 		log.Println("ERROR: Invalid Puzzle URL")
 	}
 
-	key := cookie.GetCookie("session_key", r)
-	session_key := ""
-	if key != nil {
-		session_key = key.(string)
+	session_key := utils.GetSessionKey(r)
+	if session_key != "" {
+		m := utils.GenUserTemplateData(r)
+		templates := utils.GetFilesInDir("templates/", ".html")
+		templates = append(templates[:1], templates...)
 		if CheckUserSubmission(storage.Alpha, puzzle, session_key, r.FormValue("answer")) {
 			// Input is correct, nav to congrats page, set time completed at
+			templates[0] = filepath.Join("templates", "correct.html")
 		} else {
 			// Input is incorrect, nav to try again/etc page, set one minute timer
+			templates[0] = filepath.Join("templates", "incorrect.html")
 		}
+		tmpl := template.Must(template.ParseFiles(templates...))
+		tmpl.Execute(w, m)
+	} else {
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	}
-
-	// Temporary redirect while other pages are in development
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
-func CheckUserSubmission(e storage.Event, p int, session_key, answer_raw string) bool {
+func CheckUserSubmission(e storage.Event, puzzle int, session_key, answer_raw string) bool {
 	event_id := storage.GetUserEventID(session_key, e)
 
-	dir := filepath.Join("storage", "puzzles", storage.EVENT_TO_STRING[e], strconv.Itoa(p), "output")
+	dir := filepath.Join("storage", "puzzles", storage.EVENT_TO_STRING[e], strconv.Itoa(puzzle), "output")
 
-	solution_raw := utils.GetFileContentsInDir(dir, strconv.Itoa(event_id))
+	part := storage.GetPartsCompleted(e, session_key)[puzzle-1]
+	if part < 2 {
+		solution_full := utils.GetFileContentsInDir(dir, strconv.Itoa(event_id))
+		solution_raw := strings.Split(solution_full, "\n")[part]
 
-	solution, err1 := strconv.Atoi(solution_raw)
-	answer, err2 := strconv.Atoi(answer_raw)
-	if err1 == nil && err2 == nil {
-		return solution == answer
-	} else {
-		return solution_raw == answer_raw
+		solution, err1 := strconv.Atoi(solution_raw)
+		answer, err2 := strconv.Atoi(answer_raw)
+		if err1 == nil && err2 == nil {
+			return solution == answer
+		} else {
+			return solution_raw == answer_raw
+		}
 	}
+	return false
 }
 
 func SendUserInput(w http.ResponseWriter, r *http.Request) {
@@ -93,43 +103,4 @@ func SendUserInput(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(utils.GetFileContentsInDir(filepath.Join("storage", "puzzles", "alpha", strconv.Itoa(puzzle), "input"), strconv.Itoa(event_id))))
 	}
 
-}
-
-func UpdatePartsCompleted(e storage.Event, puzzle, status int, session_key string) {
-	str := storage.GetFromTable_SessionKey(storage.EVENT_TO_STRING[e], session_key, "parts").(string)
-	if puzzle >= len(str) {
-		log.Panic("PANIC | Trying to access nonexistent puzzle in puzzles.UpdatePartsCompleted")
-		return
-	}
-
-	spl := strings.Split(str, "")
-	spl[puzzle] = strconv.Itoa(status)
-	new_str := strings.Join(spl, "")
-
-	storage.UpdateTable(storage.EVENT_TO_STRING[e], "parts", new_str, "session_key", session_key)
-}
-
-func IncPart(e storage.Event, puzzle int, session_key string) {
-	str := storage.GetFromTable_SessionKey(storage.EVENT_TO_STRING[e], session_key, "parts").(string)
-	if puzzle >= len(str) {
-		log.Panic("PANIC | Trying to increment nonexistent puzzle in puzzles.IncPart")
-		return
-	}
-
-	spl := strings.Split(str, "")
-	part, _ := strconv.Atoi(spl[puzzle])
-	spl[puzzle] = strconv.Itoa(part+1)
-	new_str := strings.Join(spl, "")
-
-	storage.UpdateTable(storage.EVENT_TO_STRING[e], "parts", new_str, "session_key", session_key)
-}
-
-func GetPartsCompleted(e storage.Event, session_key string) []int {
-	str := storage.GetFromTable_SessionKey(storage.EVENT_TO_STRING[e], session_key, "parts").(string)
-	arr := []int{}
-	for _, r := range str {
-		i, _ := strconv.Atoi(string(r))
-		arr = append(arr, i)
-	}
-	return arr
 }

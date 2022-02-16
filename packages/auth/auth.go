@@ -9,7 +9,7 @@ import (
 	"hack-o-ween-site/packages/cookie"
 	"hack-o-ween-site/packages/random"
 	"hack-o-ween-site/packages/storage"
-	"hack-o-ween-site/packages/utils"
+	"hack-o-ween-site/packages/error_log"
 	"log"
 	"net/http"
 	"os"
@@ -251,16 +251,16 @@ func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 
 	token, err := google_oauthconf.Exchange(context.Background(), code)
-	utils.CheckErr(err, utils.Panic, "Failed Code Exchange")
+	error_log.CheckErr(err, error_log.Panic, "Failed Code Exchange")
 
 	res, err := http.Get(oauthGoogleUrlAPI + token.AccessToken)
-	utils.CheckErr(err, utils.Panic,  "Failed GET on Google User Info")
+	error_log.CheckErr(err, error_log.Panic,  "Failed GET on Google User Info")
 
 	defer res.Body.Close()
 
 	var user_info map[string]interface{}
 	if err := json.NewDecoder(res.Body).Decode(&user_info); err != nil {
-		utils.CheckErr(err, utils.Panic,  "Failed JSON Decode on Google User Info")
+		error_log.CheckErr(err, error_log.Panic,  "Failed JSON Decode on Google User Info")
 		return
 	}
 
@@ -342,50 +342,17 @@ func generateSessionKey(auth_id string) string {
 func CheckExistingUser(auth_id_raw string) bool {
 	auth_id := hashAuthID(auth_id_raw)
 	db, err := sql.Open("sqlite3", AUTH_DATABASE)
-	utils.CheckErr(err, utils.Fatal, "Failed Opening Auth Database")
+	error_log.CheckErr(err, error_log.Fatal, "Failed Opening Auth Database")
 	defer db.Close()
 
 	stmt, err := db.Prepare(fmt.Sprintf("SELECT EXISTS(SELECT 1 FROM %s WHERE auth_id = ?)", storage.AUTH_TABLE))
-	utils.CheckErr(err, utils.Fatal, "Failed Transaction Preparation")
+	error_log.CheckErr(err, error_log.Fatal, "Failed Transaction Preparation")
 	defer stmt.Close()
 
 	var exists int
 	stmt.QueryRow(auth_id).Scan(&exists)
 
 	return exists == 1
-}
-
-func CheckExistingSession(r *http.Request) bool {
-	session_key := cookie.GetCookie("session_key", r)
-	if session_key == nil {
-		return false
-	}
-
-	login_date_interface := storage.GetFromTable(storage.AUTH_TABLE, "login_date", "session_key", session_key)
-	var login_date_str string
-
-	if login_date_interface != nil {
-		login_date_str = login_date_interface.(string)
-	} else {
-		log.Printf("LOG | nil login date from session key: %v", session_key)
-		return false
-	}
-
-	temp := strings.Split(login_date_str, "-")
-	temp_ints := []int{}
-	for _, str := range temp {
-		i, _ := strconv.Atoi(str)
-		temp_ints = append(temp_ints, i)
-	}
-
-	if len(temp_ints) < 3 {
-		return false
-	}
-
-	login_date := time.Date(temp_ints[0], time.Month(temp_ints[1]), temp_ints[2], 0, 0, 0, 0, time.Local)
-	since := time.Since(login_date)
-
-	return !(since.Hours() > time.Hour.Hours()*24*18) // Session Expires in 18 Days
 }
 
 // "auth_id" MUST be a valid user auth_id
@@ -395,16 +362,16 @@ func LoginUser(auth_id_raw string, w http.ResponseWriter, r *http.Request) {
 	login_date := strings.Split(time.Now().String(), " ")[0]
 
 	db, err := sql.Open("sqlite3", AUTH_DATABASE)
-	utils.CheckErr(err, utils.Fatal, "Failed Opening Auth Database")
+	error_log.CheckErr(err, error_log.Fatal, "Failed Opening Auth Database")
 	defer db.Close()
 
 	stmt, err := db.Prepare(fmt.Sprintf("UPDATE %s SET session_key=?, login_date=? WHERE auth_id=?", storage.AUTH_TABLE))
 
-	utils.CheckErr(err, utils.Fatal, "Failed Transaction Preparation")
+	error_log.CheckErr(err, error_log.Fatal, "Failed Transaction Preparation")
 	defer stmt.Close()
 
 	_, err = stmt.Exec(session_key, login_date, auth_id)
-	utils.CheckErr(err, utils.Fatal, "Failed Transaction Execution")
+	error_log.CheckErr(err, error_log.Fatal, "Failed Transaction Execution")
 
 	cookie.StoreCookie("session_key", session_key, w, r)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)

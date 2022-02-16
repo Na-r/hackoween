@@ -2,8 +2,6 @@ package main
 
 import (
 	"hack-o-ween-site/packages/auth"
-	"hack-o-ween-site/packages/cookie"
-	"hack-o-ween-site/packages/countdown"
 	"hack-o-ween-site/packages/debug"
 	"hack-o-ween-site/packages/puzzle"
 	"hack-o-ween-site/packages/settings"
@@ -35,28 +33,15 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 		path = "/index"
 	}
 
+	log.Println("Request Handled:", path)
+
 	if file := filepath.Join(dir, path); utils.FileExists(file) && filepath.Ext(file) != ".html" { // Serve a File
 		//log.Println("Serving File")
 		http.ServeFile(w, r, file)
 	} else if file = filepath.Join(dir, path+".html"); utils.FileExists(file) { // Serve templated HTML
 		//log.Println("Serving HTML")
-		key := cookie.GetCookie("session_key", r)
-		m := make(map[string]interface{})
-		session_key := ""
-		if key != nil {
-			session_key = key.(string)
-			row := storage.GetAllFromTable_SessionKey(storage.AUTH_TABLE, session_key)
-			if row != nil {
-				var id, timeout int
-				var auth_id, name, username, anon_name, pfp, session_key_filler, login_date string
-				row.Scan(&id, &auth_id, &name, &username, &anon_name, &pfp, &session_key_filler, &login_date, &timeout)
 
-				m["Username"] = storage.GetUserName(session_key)
-				m["PFP"] = pfp
-				m["Login"] = auth.CheckExistingSession(r)
-				m["Countdown"] = countdown.Get_duration()
-				m["Alpha_Parts"] = puzzle.GetPartsCompleted(storage.Alpha, session_key)			}
-		}
+		m := utils.GenUserTemplateData(r)
 
 		templates := utils.GetFilesInDir(templates_dir, ".html")
 		templates = append(templates[:1], templates...)
