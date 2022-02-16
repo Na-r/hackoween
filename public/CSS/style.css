@@ -223,7 +223,7 @@ li {
     margin: 16px auto;
     background: #21212b;
     border-radius: 6px;
-    border: 1px solid #efefef
+    border: 1px solid #efefef;
 }
 
 .section {
@@ -233,6 +233,11 @@ li {
     margin: 12px;
     width: 100%;
     border-radius: 6px;
+}
+
+.block .header-only {
+    font-size: 26px;
+    margin: 12px auto;
 }
 
 .block .row {

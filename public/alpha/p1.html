@@ -39,7 +39,8 @@
                 <div class="section">
                     <pre class="code">
 adbccadbbacd            //Translates to 2 + 1
-bacdbcadadbccdbaadbc    //Translates to 102 - 2</pre>
+bacdbcadadbccdbaadbc    //Translates to 102 - 2
+adbccdbabacdadbc        //Translates to 2 - 12</pre>
                 </div>
             </div>
         </div>
@@ -47,14 +48,15 @@ bacdbcadadbccdbaadbc    //Translates to 102 - 2</pre>
             <div class="row">
                 <div class="section">
                 <h1>Output</h1>
-                    <p>The output of the program should be a single integer that is the sum of every single operation. Given the two expressions and key shown previously, the output would be <b>103</b>.</p>
+                    <p>The output of the program should be a single integer that is the sum of every single operation. Given the expressions on the right and the key shown previously, the output would be <b>93</b>.</p>
                 </div>
                 <div class="section">
                     <pre class="code">
 adbccadbbacd            //2 + 1 = 3
-bacdbcadadbccdbaadbc    //102 - 2 = 100</pre>
+bacdbcadadbccdbaadbc    //102 - 2 = 100
+adbccdbabacdadbc        //2 - 12 = -10</pre>
                     <pre class="code">
-3 + 100 = 103</pre>
+3 + 100 + (-10) = 93</pre>
 
                 </div>
             </div>
@@ -63,7 +65,8 @@ bacdbcadadbccdbaadbc    //102 - 2 = 100</pre>
             <div class="section">
             <h1>Constants/Constraints</h1>
                 <ul>
-                    <li>Every line will be a single expression</li>
+                    <li>Every input will begin with the key</li>
+                    <li>After the key and an empty line, every line will be a single expression</li>
                     <li>Every expression will contain exactly two numbers separated by a single operation</li>
                     <li>The numbers may not be the same length of digits</li>
                     <li>The numbers will always be non-negative</li>
@@ -83,28 +86,48 @@ bacdbcadadbccdbaadbc    //102 - 2 = 100</pre>
             </div>
         </div>
 
-{{else if eq (index .Alpha_Parts 0) 1}}
+{{else if gt (index .Alpha_Parts 0) 0}}
+
+        <div class="block">
+            <h1 class="header-only">You completed Part One! Continue to Part Two below.</h1>
+        </div>
+
+        <div class="block">
+            <div class="row">
+                <div class="section">
+                <h1>Part Two Output</h1>
+                <p>For part two's solution, you will only need to add together the minimum and maximum values from the calculations. Given the expressions on the right and the key shown previously, the minimum value is -10 and the maximum value is 100. Therefore, the output would be <b>90</b>.</p>
+                </div>
+                <div class="section">
+                    <pre class="code">
+adbccadbbacd            //2 + 1 = 3
+bacdbcadadbccdbaadbc    //102 - 2 = 100
+adbccdbabacdadbc        //2 - 12 = -10</pre>
+                    <pre class="code">
+-10 + 100 = 90</pre>
+
+                </div>
+            </div>
+        </div>
+
+    {{if eq (index .Alpha_Parts 0) 1}}
 
         <div class="block" id="p1_answer">
             <div class="section">
-            <h1>;)</h1>
-                <p>Here's your <a href="/alpha/p1/input">input</a>, and you may submit your solution below.</p>
+            <h1>Happy Hacking!</h1>
+                <p>While it's still the same, here's your <a href="/alpha/p1/input">input</a> again if you need it.</p>
                 <form id="p1_answer" action="/alpha/p1/submit" method="post">
                     <input type="text" name="answer" maxlength="16" size="16"><input type="submit" value="Submit" accesskey="s">
             </div>
         </div>
 
-{{else}}
+    {{else}}
 
-        <div class="block" id="p1_answer">
-            <div class="section">
-            <h1>You did it!!!!!!!!!</h1>
-                <p>Here's your <a href="/alpha/p1/input">input</a>, and you may submit your solution below.</p>
-                <form id="p1_answer" action="/alpha/p1/submit" method="post">
-                    <input type="text" name="answer" maxlength="16" size="16"><input type="submit" value="Submit" accesskey="s">
-            </div>
+        <div class="block">
+            <h1 class="header-only">You completed Part Two! Congrats, you've solved this puzzle!</h1>
         </div>
 
+    {{end}}
 {{end}}
     </div>
 </body>
