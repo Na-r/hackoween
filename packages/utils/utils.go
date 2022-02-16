@@ -14,7 +14,7 @@ import (
 )
 
 // Returns a slice of all the files in the directory matching the extension
-func GetFilesInDir(dir, ext string) (ret []string){
+func GetFilesInDir(dir, ext string) (ret []string) {
 	files, _ := ioutil.ReadDir(dir)
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ext || ext == "" {
