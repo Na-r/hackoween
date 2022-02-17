@@ -148,7 +148,7 @@ a.topbar-link:hover {
 .topbar-pfp {
     display: inline;
     vertical-align: -5%;
-    border-radius: 2px;
+    border-radius: 4px;
 }
 
 .topbar-username {
