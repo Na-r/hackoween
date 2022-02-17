@@ -12,9 +12,14 @@
                 <div class="section">
                     <h1>Display Name</h1>
                     <p style="margin-bottom:6px;">Select how you'd like your name displayed on the site</p>
-                    <div><label><input type="radio" name="name_type" value="0"/><span>Username</span></label></div>
-                    <div><label><input type="radio" name="name_type" value="1"/><span>Real Name</span></label></div>
-                    <div><label><input type="radio" name="name_type" value="2"/><span>Anonymous Name</span></label></div>
+
+{{if ne .SettingsPage.Username ""}}
+
+                    <div><label><input type="radio" name="name_type" value="0"/><span>{{.SettingsPage.Username}}</span></label></div>
+
+{{end}}
+                    <div><label><input type="radio" name="name_type" value="1"/><span>{{.SettingsPage.Name}}</span></label></div>
+                    <div><label><input type="radio" name="name_type" value="2"/><span>{{.SettingsPage.AnonName}}</span></label></div>
                 </div>
                 <div class="section">
                     <h1>Theme</h1>

@@ -55,7 +55,7 @@ func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
 			// Input is incorrect, nav to try again/etc page, set one minute timer
 			templates[0] = filepath.Join("templates", "incorrect.html")
 		}
-		m := utils.GenUserTemplateData(r)
+		m := utils.GenUserTemplateData(r, "alpha")
 		log.Println(strings.Trim(r.URL.Path, "/submit"))
 		m["Puzzle_Page"] = "/" + strings.Trim(r.URL.Path, "/submit")
 		m["Puzzle"] = 0

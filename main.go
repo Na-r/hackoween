@@ -41,7 +41,7 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 	} else if file = filepath.Join(dir, path+".html"); utils.FileExists(file) { // Serve templated HTML
 		//log.Println("Serving HTML")
 
-		m := utils.GenUserTemplateData(r)
+		m := utils.GenUserTemplateData(r, path)
 
 		templates := utils.GetFilesInDir(templates_dir, ".html")
 		templates = append(templates[:1], templates...)

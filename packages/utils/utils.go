@@ -94,7 +94,7 @@ func CheckExistingSession(r *http.Request) bool {
 	return !(since.Hours() > time.Hour.Hours()*24*18) // Session Expires in 18 Days
 }
 
-func GenUserTemplateData(r *http.Request) map[string]interface{} {
+func GenUserTemplateData(r *http.Request, path string) map[string]interface{} {
 	m := make(map[string]interface{})
 	session_key := GetSessionKey(r)
 	if session_key != "" {
@@ -107,7 +107,15 @@ func GenUserTemplateData(r *http.Request) map[string]interface{} {
 			m["Username"] = storage.GetUserName(session_key)
 			m["PFP"] = pfp
 			m["Login"] = CheckExistingSession(r)
-			m["Alpha_Parts"] = storage.GetPartsCompleted(storage.Alpha, session_key)
+			if strings.Contains(path, "settings") {
+				temp := make(map[string]string)
+				temp["Username"] = username
+				temp["Name"] = name
+				temp["AnonName"] = anon_name
+				m["SettingsPage"] = temp
+			} else if strings.Contains(path, "alpha") {
+				m["Alpha_Parts"] = storage.GetPartsCompleted(storage.Alpha, session_key)
+			}
 		}
 	}
 
