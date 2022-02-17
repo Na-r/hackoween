@@ -32,23 +32,6 @@ func BindURLs(url string, e storage.Event) {
 func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
 	session_key := utils.GetSessionKey(r)
 	if session_key != "" {
-		timeout := storage.GetFromTable_SessionKey(storage.AUTH_TABLE, session_key, "timeout").(int64)
-
-		if !utils.HasTimePassed(timeout, 60) {
-			m := utils.GenUserTemplateData(r, "alpha")
-			templates := utils.GetFilesInDir("templates/", ".html")
-			templates = append(templates[:1], templates...)
-			templates[0] = filepath.Join("templates", "timeout.html")
-
-			log.Println(strings.Trim(r.URL.Path, "/submit"))
-			m["Puzzle_Page"] = "/" + strings.Trim(r.URL.Path, "/submit")
-			m["Puzzle"] = 0
-
-			tmpl := template.Must(template.ParseFiles(templates...))
-			tmpl.Execute(w, m)
-			return
-		}
-
 		// Parse the URL to get the current puzzle
 		puzzle_slice := strings.Split(r.URL.Path, "/")
 		if len(puzzle_slice) < 2 {
@@ -62,21 +45,56 @@ func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
 			log.Println("ERROR: Invalid Puzzle URL")
 		}
 
+		timeout := storage.GetFromTable_SessionKey(storage.AUTH_TABLE, session_key, "timeout").(int64)
+
+		// If user is timed out, immediately send them to the timeout page and return
+		if !utils.HasTimePassed(timeout, 60) {
+			m := utils.GenUserTemplateData(r, "alpha")
+			templates := utils.GetFilesInDir("templates/", ".html")
+			templates = append(templates[:1], templates...)
+			templates[0] = filepath.Join("templates", "timeout.html")
+
+			log.Println(strings.Trim(r.URL.Path, "/submit"))
+			m["Puzzle_Page"] = "/" + strings.Trim(r.URL.Path, "/submit")
+			m["Puzzle"] = puzzle
+
+			tmpl := template.Must(template.ParseFiles(templates...))
+			tmpl.Execute(w, m)
+			return
+		}
+
 		templates := utils.GetFilesInDir("templates/", ".html")
 		templates = append(templates[:1], templates...)
 		if CheckUserSubmission(storage.Alpha, puzzle, session_key, r.FormValue("answer")) {
 			// Input is correct, nav to congrats page, set time completed at
 			storage.IncPart(storage.Alpha, puzzle, session_key)
 			templates[0] = filepath.Join("templates", "correct.html")
+
+			if completion := storage.GetPartsCompleted(storage.Alpha, session_key); completion[puzzle] >= 2 {
+				log.Println(completion)
+
+				storage.SetPuzzleTime(storage.Alpha, puzzle, session_key)
+
+				complete := true
+				for _, elem := range completion {
+					if elem < 2 {
+						complete = false
+					}
+				}
+
+				if complete {
+					storage.SetEventComplete(storage.Alpha, session_key)
+				}
+
+			}
 		} else {
 			// Input is incorrect, nav to try again/etc page, set one minute timer
 			storage.SetPuzzleTimeout(session_key)
 			templates[0] = filepath.Join("templates", "incorrect.html")
 		}
 		m := utils.GenUserTemplateData(r, "alpha")
-		log.Println(strings.Trim(r.URL.Path, "/submit"))
 		m["Puzzle_Page"] = "/" + strings.Trim(r.URL.Path, "/submit")
-		m["Puzzle"] = 0
+		m["Puzzle"] = puzzle
 
 		tmpl := template.Must(template.ParseFiles(templates...))
 		tmpl.Execute(w, m)

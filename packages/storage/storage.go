@@ -291,11 +291,8 @@ func GetUserEventID(session_key string, e Event) int {
 
 	if event_id == -1 {
 		event_id = rand.Intn(1000)
-		id_intf = GetFromTable_SessionKey(table, session_key, "id")
-		var id int
-		if id_intf != nil {
-			id = int(id_intf.(int64))
-		} else {
+		id := GetFromTable_SessionKey(table, session_key, "id")
+		if id == nil {
 			return -100
 		}
 		UpdateTable(table, "event_id", event_id, "id", id)
@@ -352,4 +349,15 @@ func GetPartsCompleted(e Event, session_key string) []int {
 func SetPuzzleTimeout(session_key string) {
 	t := time.Now().Unix()
 	UpdateTable(AUTH_TABLE, "timeout", t, "session_key", session_key)
+}
+
+func SetPuzzleTime(e Event, puzzle int, session_key string) {
+	col := "time_" + strconv.Itoa(puzzle+1)
+	id := GetFromTable_SessionKey(AUTH_TABLE, session_key, "id")
+	UpdateTable(EVENT_TO_STRING[e], col, time.Now().Unix(), "id", id)
+}
+
+func SetEventComplete(e Event, session_key string) {
+	id := GetFromTable_SessionKey(AUTH_TABLE, session_key, "id")
+	UpdateTable(EVENT_TO_STRING[e], "complete", 1, "id", id)
 }
