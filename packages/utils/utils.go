@@ -121,3 +121,8 @@ func GenUserTemplateData(r *http.Request, path string) map[string]interface{} {
 
 	return m
 }
+
+func HasTimePassed(start_t int64, seconds int) bool {
+	now := time.Now().Unix()
+	return (start_t + int64(seconds)) <= now
+}

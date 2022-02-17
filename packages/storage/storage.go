@@ -348,3 +348,8 @@ func GetPartsCompleted(e Event, session_key string) []int {
 	}
 	return arr
 }
+
+func SetPuzzleTimeout(session_key string) {
+	t := time.Now().Unix()
+	UpdateTable(AUTH_TABLE, "timeout", t, "session_key", session_key)
+}

@@ -30,21 +30,38 @@ func BindURLs(url string, e storage.Event) {
 }
 
 func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
-	// Parse the URL to get the current puzzle
-	puzzle_slice := strings.Split(r.URL.Path, "/")
-	if len(puzzle_slice) < 2 {
-		return
-	}
-
-	puzzle_str := puzzle_slice[2]
-	puzzle, err := strconv.Atoi(string(puzzle_str[1]))
-	puzzle--
-	if err != nil {
-		log.Println("ERROR: Invalid Puzzle URL")
-	}
-
 	session_key := utils.GetSessionKey(r)
 	if session_key != "" {
+		timeout := storage.GetFromTable_SessionKey(storage.AUTH_TABLE, session_key, "timeout").(int64)
+
+		if !utils.HasTimePassed(timeout, 60) {
+			m := utils.GenUserTemplateData(r, "alpha")
+			templates := utils.GetFilesInDir("templates/", ".html")
+			templates = append(templates[:1], templates...)
+			templates[0] = filepath.Join("templates", "timeout.html")
+
+			log.Println(strings.Trim(r.URL.Path, "/submit"))
+			m["Puzzle_Page"] = "/" + strings.Trim(r.URL.Path, "/submit")
+			m["Puzzle"] = 0
+
+			tmpl := template.Must(template.ParseFiles(templates...))
+			tmpl.Execute(w, m)
+			return
+		}
+
+		// Parse the URL to get the current puzzle
+		puzzle_slice := strings.Split(r.URL.Path, "/")
+		if len(puzzle_slice) < 2 {
+			return
+		}
+
+		puzzle_str := puzzle_slice[2]
+		puzzle, err := strconv.Atoi(string(puzzle_str[1]))
+		puzzle--
+		if err != nil {
+			log.Println("ERROR: Invalid Puzzle URL")
+		}
+
 		templates := utils.GetFilesInDir("templates/", ".html")
 		templates = append(templates[:1], templates...)
 		if CheckUserSubmission(storage.Alpha, puzzle, session_key, r.FormValue("answer")) {
@@ -53,6 +70,7 @@ func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
 			templates[0] = filepath.Join("templates", "correct.html")
 		} else {
 			// Input is incorrect, nav to try again/etc page, set one minute timer
+			storage.SetPuzzleTimeout(session_key)
 			templates[0] = filepath.Join("templates", "incorrect.html")
 		}
 		m := utils.GenUserTemplateData(r, "alpha")
