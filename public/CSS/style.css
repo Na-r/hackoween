@@ -305,6 +305,10 @@ input[type=submit] {
     color: whitesmoke;
 }
 
+input[type=radio] {
+    margin-right: 6px;
+}
+
 input[type=submit]:hover {
     border: 1px solid orange;
 }
