@@ -330,7 +330,13 @@ func IncPart(e Event, puzzle int, session_key string) {
 	spl[puzzle] = strconv.Itoa(part+1)
 	new_str := strings.Join(spl, "")
 
-	UpdateTable(EVENT_TO_STRING[e], "parts", new_str, "session_key", session_key)
+	id := GetFromTable_SessionKey(AUTH_TABLE, session_key, "id")
+
+	if id == nil {
+		return
+	}
+
+	UpdateTable(EVENT_TO_STRING[e], "parts", new_str, "id", id)
 }
 
 func GetPartsCompleted(e Event, session_key string) []int {

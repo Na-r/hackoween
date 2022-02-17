@@ -23,6 +23,10 @@
   background: #555;
 }
 
+html {
+  overflow-y: scroll;
+}
+
 body {
     /* background: #1f1f2e; */
     color: #FFF;
@@ -258,7 +262,7 @@ li {
 .section p {
     text-align: justify;
     margin: 0px;
-    margin-bottom: 6px;
+    margin-top: 6px;
 }
 
 .section h1 {
@@ -297,6 +301,7 @@ input[type=submit] {
     border-radius: 3px;
     font-family: 'DejaVuSansMono', monospace;
     margin: 4px;
+    margin-top: 8px;
     color: whitesmoke;
 }
 

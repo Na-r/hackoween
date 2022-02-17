@@ -38,22 +38,28 @@ func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
 
 	puzzle_str := puzzle_slice[2]
 	puzzle, err := strconv.Atoi(string(puzzle_str[1]))
+	puzzle--
 	if err != nil {
 		log.Println("ERROR: Invalid Puzzle URL")
 	}
 
 	session_key := utils.GetSessionKey(r)
 	if session_key != "" {
-		m := utils.GenUserTemplateData(r)
 		templates := utils.GetFilesInDir("templates/", ".html")
 		templates = append(templates[:1], templates...)
 		if CheckUserSubmission(storage.Alpha, puzzle, session_key, r.FormValue("answer")) {
 			// Input is correct, nav to congrats page, set time completed at
+			storage.IncPart(storage.Alpha, puzzle, session_key)
 			templates[0] = filepath.Join("templates", "correct.html")
 		} else {
 			// Input is incorrect, nav to try again/etc page, set one minute timer
 			templates[0] = filepath.Join("templates", "incorrect.html")
 		}
+		m := utils.GenUserTemplateData(r)
+		log.Println(strings.Trim(r.URL.Path, "/submit"))
+		m["Puzzle_Page"] = "/" + strings.Trim(r.URL.Path, "/submit")
+		m["Puzzle"] = 0
+
 		tmpl := template.Must(template.ParseFiles(templates...))
 		tmpl.Execute(w, m)
 	} else {
@@ -64,9 +70,9 @@ func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
 func CheckUserSubmission(e storage.Event, puzzle int, session_key, answer_raw string) bool {
 	event_id := storage.GetUserEventID(session_key, e)
 
-	dir := filepath.Join("storage", "puzzles", storage.EVENT_TO_STRING[e], strconv.Itoa(puzzle), "output")
+	dir := filepath.Join("storage", "puzzles", storage.EVENT_TO_STRING[e], strconv.Itoa(puzzle+1), "output")
 
-	part := storage.GetPartsCompleted(e, session_key)[puzzle-1]
+	part := storage.GetPartsCompleted(e, session_key)[puzzle]
 	if part < 2 {
 		solution_full := utils.GetFileContentsInDir(dir, strconv.Itoa(event_id))
 		solution_raw := strings.Split(solution_full, "\n")[part]

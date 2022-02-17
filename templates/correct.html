@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{template "Meta" .}}
+    <title>Hack-o-Ween</title>
+</head>
+<body>
+    {{template "Header" .}}
+    <div class="main-container">
+        <div class="block">
+        <div class="section">
+            <h1>Congratulations!</h1>
+{{if eq (index .Alpha_Parts .Puzzle) 1}}
+            <p>That's the correct answer! You have unlocked Part Two of this puzzle!</p>
+            <p>Click <a href={{.Puzzle_Page}}>here</a> to return to the puzzle page.</p>
+{{else if eq (index .Alpha_Parts .Puzzle) 2}}
+            <p>That's the correct answer! You've solved this puzzle!!</p>
+            <p>Click <a href={{.Puzzle_Page}}>here</a> to return to the puzzle page.</p>
+{{end}}
+        </div>
+        </div>
+    </div>
+</body>
+</html>
