@@ -33,7 +33,7 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 		path = "/index"
 	}
 
-	log.Println("Request Handled:", path)
+	// log.Println("Request Handled:", path)
 
 	if file := filepath.Join(dir, path); utils.FileExists(file) && filepath.Ext(file) != ".html" { // Serve a File
 		//log.Println("Serving File")
