@@ -54,7 +54,6 @@ func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
 			templates = append(templates[:1], templates...)
 			templates[0] = filepath.Join("templates", "timeout.html")
 
-			log.Println(strings.Trim(r.URL.Path, "/submit"))
 			m["Puzzle_Page"] = "/" + strings.Trim(r.URL.Path, "/submit")
 			m["Puzzle"] = puzzle
 
@@ -71,8 +70,6 @@ func GetUserSubmission(w http.ResponseWriter, r *http.Request) {
 			templates[0] = filepath.Join("templates", "correct.html")
 
 			if completion := storage.GetPartsCompleted(storage.Alpha, session_key); completion[puzzle] >= 2 {
-				log.Println(completion)
-
 				storage.SetPuzzleTime(storage.Alpha, puzzle, session_key)
 
 				complete := true
