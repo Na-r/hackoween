@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{template "Meta" .}}
+    <title>Alpha-P2</title>
+</head>
+<body>
+    {{template "Header" .}}
+    <div class="main-container">
+        <div class="block">
+            <div class="section">
+                <h1>Overview</h1>
+                <p>Your next task will be to analyze a minefield! You'll be given a 100x100 minefield to work with. If a mine explodes, it will cause adjacent mines to explode, too. This can cause a chain reaction, with mines exploding mines exploding mines. The range of a mine's explosion is only the eight tiles surrounding it; in other words, it only has a radius of one.</p>
+            </div>
+        </div>
+        <div class="block">
+            <div class="section">
+            <h1>Input</h1>
+                <p>The input is a 100x100 grid of characters. An 'X' marks a mine, and a space ' ' marks an empty spot.</p>
+                <p>For this example, a 6x6 minefield will be used instead.</p>
+            </div>
+            <div class="section">
+                <pre class="code">
+     X
+X XX
+  X  X
+X  X X
+ X X
+X    X</pre>
+            </div>
+        </div>
+        <div class="block">
+            <div class="row">
+                <div class="section">
+                <h1>Output</h1>
+                    <h2>Mines</h2>
+                    <p>You will need to find all the mines <i>that do not cause another mine to explode when detonated.</i> In the example at the right, those mines are highlighted.</p>
+                    <br><h2>Scoring</h2>
+                    <p>Each mine has an <i>i</i> (row) position, and a <i>j</i> (column) position. When you find all the mines that fulfill the above requirement, multiply the sum of all <i>i-th</i> positions with the sum of all <i>j-th</i> positions. In other words, add together all <i>i</i> positions into one number and all <i>j</i> positions into another number, then multiply the two together. That will be the score you're looking for.</p>
+                    <p>Given the example, the score is <b>60</b>.</p>
+                </div>
+                <div class="section">
+                    <pre class="code">
+     <b>X</b>
+<b>X</b> XX
+  X  X
+X  X X
+ X X
+X    <b>X</b></pre><br>
+                    <pre class="code">
+     <b>X</b>       // i: 0 | j: 5
+<b>X</b> XX         // i: 1 | j: 0
+  X  X
+X  X X
+ X X
+X    <b>X</b>       // i: 5 | j: 5</pre>
+                    <pre class="code">
+     i             j
+(0 + 1 + 5) * (5 + 0 + 5)
+       6 * 10 = 60</pre>
+                </div>
+            </div>
+        </div>
+        <div class="block">
+            <div class="section">
+            <h1>Constants/Constraints</h1>
+                <ul>
+                    <li>The input will be exactly 100x100 characters large</li>
+                </ul>
+            </div>
+        </div>
+
+{{if eq (index .Alpha_Parts 1) 0}}
+
+        <div class="block" id="p2_answer">
+            <div class="section">
+            <h1>Happy Hacking!</h1>
+                <p>Here's your <a href="/alpha/p2/input">input</a>, and you may submit your solution below.</p>
+                <form id="p2_answer" action="/alpha/p2/submit" method="post" autocomplete="off">
+                    <input type="text" name="answer" maxlength="16" size="16"><input type="submit" value="Submit" accesskey="s">
+            </div>
+        </div>
+
+{{else if gt (index .Alpha_Parts 1) 0}}
+
+        <div class="block">
+            <h1 class="header-only">You completed Part One! Continue to Part Two below.</h1>
+        </div>
+
+        <div class="block">
+            <div class="row">
+                <div class="section">
+                <h1>Part Two Output</h1>
+                    <h2>Mines</h2>
+                    <p>For Part Two, you'll be looking for a different set of mines. You'll need to find the mines <i>that are in the longest chain of exploding mines.</i></p>
+                    <p>The scoring is the same as the previous part. Following this new rule, the score and correct output is <b>143</b>.</p>
+                </div>
+                <div class="section">
+                <pre class="code">
+     X
+X <b>X</b><b>X</b>
+  <b>X</b>  X
+X  <b>X</b> X
+ X <b>X</b>
+X    X</pre>
+                <br><pre class="code">
+(1 + 1 + 2 + 3 + 4) * (2 + 3 + 2 + 3 + 3) = 143</pre>
+
+                </div>
+            </div>
+        </div>
+
+    {{if eq (index .Alpha_Parts 1) 1}}
+
+        <div class="block" id="p2_answer">
+            <div class="section">
+            <h1>Happy Hacking!</h1>
+                <p>While it's still the same, here's your <a href="/alpha/p2/input">input</a> again if you need it.</p>
+                <form id="p2_answer" action="/alpha/p2/submit" method="post" autocomplete="off">
+                    <input type="text" name="answer" maxlength="16" size="16"><input type="submit" value="Submit" accesskey="s">
+            </div>
+        </div>
+
+    {{else}}
+
+        <div class="block">
+            <h1 class="header-only">You completed Part Two! Congrats, you've solved this puzzle!!</h1>
+        </div>
+
+    {{end}}
+{{end}}
+    </div>
+</body>
+</html>

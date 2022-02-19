@@ -281,6 +281,10 @@ li {
     margin-top: 0px;
 }
 
+pre b {
+    color: orange;
+}
+
 ul li {
     display: list-item;
     list-style-type: square;
