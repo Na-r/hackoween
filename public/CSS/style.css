@@ -220,6 +220,51 @@ li {
     display: block;
 }
 
+.puzzle-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  /*   /\* display: inline-flex; *\/ */
+  /*   /\* gap: 50px; *\/ */
+  /*   /\* justify-content: space-around; *\/ */
+}
+
+.puzzle-block {
+    display: inline-block;
+    margin: 16px 50px;
+    background: #21212b;
+    border-radius: 6px;
+    border: 1px solid #efefef;
+}
+
+.puzzle-block .section {
+    padding: 6px;
+    margin-bottom: 0px;
+    width: 100%;
+}
+
+.puzzle-block a {
+    vertical-align: top;
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    color: whitesmoke;
+}
+
+.puzzle-block a:hover {
+    color: orange;
+}
+
+.puzzle-block img {
+    border-radius: 4px;
+}
+
+.puzzle-block h1 {
+    display: block;
+    padding-bottom: 0px;
+}
+
 .block {
     display: flex;
     flex-wrap: wrap;
@@ -236,7 +281,6 @@ li {
     padding: 18px 16px;
     margin: 12px;
     width: 100%;
-    border-radius: 6px;
 }
 
 .block .header-only {
