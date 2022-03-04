@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{template "Meta" .}}
+    <title>Alpha-P3</title>
+</head>
+<body>
+    {{template "Header" .}}
+    <div class="main-container">
+        <div class="block">
+            <div class="section">
+            <h1>Overview</h1>
+                <p>The third and final task will be to measure ripples in a pool of water. You will receive coordinates where items are dropped into a pool of water, and it will be up to your program to track the ripples as they flow across the surface.</p>
+            </div>
+        </div>
+        <div class="block">
+        <div class="row">
+            <div class="section">
+            <h1>Behavior</h1>
+                <h2>Ripples</h2>
+                <p>The X at the right represents one item being dropped into water.</p>
+                <p>After each step, the ripples move outward from the initial spot the item was dropped on. The 1's represent the height of the ripple at that location.</p>
+                <br><h2>Ripple Intersections</h2>
+                <p>When two ripples intersect, they add together and form a bigger ripple. After the intersection, the ripples will continue to move independently.</p>
+                <p>For example, in the right code blocks, the left and right ripples intersect in the middle, forming the line of 2's. After that, they continue to move as they were before: the left ripple is now on the right side, and the left ripple is now on the left side.</p>
+                <p>The tops and bottoms of the ripples seem to "disappear", due to them moving off the grid. <b>In your program, the grid of the pool of water will be 100x100.</b> So if a ripple moves out of those bounds, it's completely gone.</p>
+            </div>
+            <div class="section">
+                <pre class="code">
+
+
+  X
+
+     </pre>
+                <pre class="code">
+
+ 111
+ 1X1
+ 111
+     </pre>
+                <pre class="code">
+11111
+1   1
+1 X 1
+1   1
+11111</pre><br><br><br>
+                <pre class="code">
+//Step0
+
+
+X     X
+
+ </pre>
+                <pre class="code">
+//Step1
+
+11   11
+X1   1X
+11   11
+ </pre>
+                <pre class="code">
+//Step2
+111 111
+  1 1
+X 1 1 X
+  1 1
+111 111</pre>
+                <pre class="code">
+//Step3
+   <b>2</b>
+   <b>2</b>
+X  <b>2</b>  X
+   <b>2</b>
+   <b>2</b>   </pre>
+                <pre class="code">
+//Step4
+  1 1
+  1 1
+X 1 1 X
+  1 1
+  1 1  </pre>
+                <pre class="code">
+//Step5
+ 1   1
+ 1   1
+X1   1X
+ 1   1
+ 1   1  </pre>
+            </div>
+        </div>
+        </div>
+
+        <div class="block">
+            <div class="section">
+            <h1>Input</h1>
+                <p>A list of (i, j) coordinates marking where items are dropped. <i>i</i> is the row number, and <i>j</i> is the column number. Both start from 0.</p>
+                <p><b>For now, disregard the number prefixing each coordinate.</b></p>
+            </div>
+            <div class="section">
+                <pre class="code">
+2: (3, 5)
+0: (1, 7)
+1: (2, 5)
+0: (2, 2)
+1: (6, 3)</pre>
+            </div>
+        </div>
+        <div class="block">
+            <div class="row">
+                <div class="section">
+                <h1>Output</h1>
+                <p>Your program will need to output a single integer that's calculated as follows: <i>the greatest height any ripple reaches</i> times <i>the amount of points the ripple is heighest at</i> times <i>the step it occurs on</i>.</p>
+                <p>Given the ripple on the right from the previous example: the height is 2, there are 5 points on the ripple at that height, and it occurs on step 3. Multiplying them together gives the solution, <b>30</b>.</p>
+                </div>
+                <div class="section">
+                <pre class="code">
+//Step3
+   <b>2</b>
+   <b>2</b>
+X  <b>2</b>  X
+   <b>2</b>
+   <b>2</b>   </pre>
+                </div>
+            </div>
+        </div>
+        <div class="block">
+            <div class="section">
+            <h1>Constants/Constraints</h1>
+                <ul>
+                    <li>No two coordinates will be in the same spot.</li>
+                    <li>The size of the grid of water you will need to simulate is 100x100.</li>
+                    <li>Each ripple will add exactly one height to the spot it occupies.</li>
+                    <li>Ripples will never be blocked by anything.</li>
+                    <li>Once out of the grid, that section of ripple is gone.</li>
+                    <li>Ripples can travel over the spots items are initially dropped at.</li>
+                </ul>
+            </div>
+        </div>
+
+{{if eq (index .Alpha_Parts 2) 0}}
+
+        <div class="block" id="p3_answer">
+            <div class="section">
+            <h1>Happy Hacking!</h1>
+                <p>Here's your <a href="/alpha/p3/input">input</a>, and you may submit your solution below.</p>
+                <form id="p2_answer" action="/alpha/p3/submit" method="post" autocomplete="off">
+                    <input type="text" name="answer" maxlength="16" size="16"><input type="submit" value="Submit" accesskey="s">
+            </div>
+        </div>
+
+{{else if gt (index .Alpha_Parts 2) 0}}
+
+        <div class="block">
+            <h1 class="header-only">You completed Part One! Continue to Part Two below.</h1>
+        </div>
+
+        <div class="block">
+            <div class="section">
+            <h1>Part Two</h1>
+                    <p>For Part Two, you will now incorporate the numbers prefixing each coordinate in the input. The numbers signify <i>what step that ripple begins on.</i></p>
+                    <p>Besides that, everything else is still identical to the previous part.</p>
+            </div>
+        </div>
+
+    {{if eq (index .Alpha_Parts 2) 1}}
+
+        <div class="block" id="p3_answer">
+            <div class="section">
+            <h1>Happy Hacking!</h1>
+                <p>While it's still the same, here's your <a href="/alpha/p3/input">input</a> again if you need it.</p>
+                <form id="p3_answer" action="/alpha/p3/submit" method="post" autocomplete="off">
+                    <input type="text" name="answer" maxlength="16" size="16"><input type="submit" value="Submit" accesskey="s">
+            </div>
+        </div>
+
+    {{else}}
+
+        <div class="block">
+            <h1 class="header-only">You completed Part Two! Congrats, you've solved this puzzle!!</h1>
+        </div>
+
+    {{end}}
+{{end}}
+    </div>
+</body>
+</html>
