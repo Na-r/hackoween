@@ -110,7 +110,7 @@ X1   1X
                 <div class="section">
                 <h1>Output</h1>
                 <p>Your program will need to output a single integer that's calculated as follows: <i>the greatest height any ripple reaches</i> times <i>the amount of points the ripple is heighest at</i> times <i>the step it occurs on</i>.</p>
-                <p>Given the ripple on the right from the previous example: the height is 2, there are 5 points on the ripple at that height, and it occurs on step 3. Multiplying them together gives the solution, <b>30</b>.</p>
+                <p>Given the ripple on the right from the previous example: the height is 2, there are 5 points on the ripple at that height, and it occurs on step 3. Multiplying them together gives the solution, <b>30</b>. Even if there were later steps where a maximum height of 2 was reached, <b>this would remain the solution.</b></p>
                 </div>
                 <div class="section">
                 <pre class="code">
@@ -133,7 +133,8 @@ X  <b>2</b>  X
                     <li>Each ripple will add exactly one height to the spot it occupies.</li>
                     <li>Ripples will never be blocked by anything.</li>
                     <li>Ripples can travel over the spots items are initially dropped at.</li>
-                    <li>The point from which an item is dropped <b>does not</b> create a ripple. In other words, step 0 will always have a maximum height of 0; the ripples being created on subsequent steps.</li>
+                    <li>If the ripple reaches the same maximum height on different steps, only the first step it occurs on will be the solution.</li>
+                    <li>The point from which an item is dropped <b>does not</b> create a ripple. In other words, step 0 will always have a maximum height of 0.</li>
                 </ul>
             </div>
         </div>
