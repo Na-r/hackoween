@@ -126,7 +126,7 @@ func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 	// Next, lets send the HTTP request to call the github oauth enpoint
 	// to get our access token
 	reqURL := fmt.Sprintf("%s?client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=%s",
-		gitlab.Endpoint.TokenURL, storage.PRIVATE_DATA.GL.ID, storage.PRIVATE_DATA.GL.SECRET, code, "http://localhost:9956/oauth/gitlab")
+		gitlab.Endpoint.TokenURL, storage.PRIVATE_DATA.GL.ID, storage.PRIVATE_DATA.GL.SECRET, code, "https://hackoween.dev/oauth/gitlab")
 	req, err := http.NewRequest(http.MethodPost, reqURL, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "could not create HTTP request: %v", err)
@@ -206,7 +206,7 @@ func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 }
 
 var google_oauthconf = &oauth2.Config{
-	RedirectURL:  "http://localhost:9956/oauth/google/callback",
+	RedirectURL:  "https://hackoween.dev/oauth/google/callback",
 	ClientID:     storage.PRIVATE_DATA.GG.ID,
 	ClientSecret: storage.PRIVATE_DATA.GG.SECRET,
 	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.profile"},
