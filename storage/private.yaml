@@ -1,0 +1,9 @@
+gh:
+    id: GH_id
+    secret: GH_secret
+gl:
+    id: GL_id
+    secret: GL_secret
+gg:
+    id: GG_id
+    secret: GG_secret

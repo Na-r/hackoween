@@ -6,16 +6,18 @@ import (
 	"hack-o-ween-site/packages/error_log"
 	"log"
 	"math/rand"
+	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+	"gopkg.in/yaml.v2"
 )
 
 const STORAGE_DIR = "storage/"
 const DB = STORAGE_DIR+"HoW.db"
+const PRIVATE_FN = STORAGE_DIR+"private.yaml"
 
 const AUTH_TABLE = "Auth"
 const SETTINGS_TABLE = "Settings"
@@ -42,43 +44,27 @@ const (
 	Anonymous NameType = 2
 )
 
-type UserSettings struct {
-	Theme ThemeType
-	NameSetting NameType
-}
-
-type DaysInfo struct {
-	Completed bool
-	PuzzlesSolved int
-	DateCompleted time.Time
-}
-
-type ExtraInfo struct {
-	Completed bool
-}
-
-type UserInfo struct {
-	Settings UserSettings
-	Days	[]DaysInfo
-}
-
-type UID_Struct struct {
-	mu      sync.Mutex
-	curr_id uint
-	file    string `default:"test"`
-}
-
-var UID UID_Struct = UID_Struct{
-	curr_id: 0,
-	file:    "id.cdb",
-}
-
 var EVENT_TO_STRING map[Event]string
+
+type PrivateDataStruct struct {
+	GH, GL, GG struct {
+		ID string `yaml:"id"`
+		SECRET string `yaml:"secret"`
+	}
+}
+
+var PRIVATE_DATA PrivateDataStruct
 
 func init() {
 	EVENT_TO_STRING = make(map[Event]string)
 	EVENT_TO_STRING[Alpha] = strings.ToLower(ALPHA_TABLE)
 	EVENT_TO_STRING[HoW_2022] = strings.ToLower(HOW_2022_TABLE)
+
+	private, err := os.ReadFile(PRIVATE_FN)
+	error_log.CheckErr(err, error_log.Fatal, "Private Data File Not Found")
+
+	err = yaml.UnmarshalStrict(private, &PRIVATE_DATA)
+	error_log.CheckErr(err, error_log.Fatal, "Private Data is in Wrong Format")
 }
 
 func InsertIntoTable(table_name, cols string, args ...interface{}) {

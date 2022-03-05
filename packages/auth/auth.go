@@ -23,15 +23,6 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-const clientID_github = "e3608b8becc8be75c377"
-const clientSecret_github = "edf9f8aea66771b6cd9077325c4c52799cb98710"
-
-const clientID_gitlab = "09e978b08b2056b0e7d98fd8af90a55f14038189473c162d82fa97e4bfe1b608"
-const clientSecret_gitlab = "c0022910a61977e536e6ad688723db34c538d2de549e99054db8d675c008b65f"
-
-const clientID_google = "68153534942-ktejgnej2ki284h3c17ljm314998ah3r.apps.googleusercontent.com"
-const clientSecret_google = "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"
-
 type OAuthAccessResponse struct {
 	AccessToken string `json:"access_token"`
 }
@@ -53,7 +44,7 @@ func GithubAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 	// Next, lets send the HTTP request to call the github oauth enpoint
 	// to get our access token
 	reqURL := fmt.Sprintf("%s?client_id=%s&client_secret=%s&code=%s",
-		github.Endpoint.TokenURL, clientID_github, clientSecret_github, code)
+		github.Endpoint.TokenURL, storage.PRIVATE_DATA.GH.ID, storage.PRIVATE_DATA.GH.SECRET, code)
 	req, err := http.NewRequest(http.MethodPost, reqURL, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "could not create HTTP request: %v", err)
@@ -135,7 +126,7 @@ func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 	// Next, lets send the HTTP request to call the github oauth enpoint
 	// to get our access token
 	reqURL := fmt.Sprintf("%s?client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=%s",
-		gitlab.Endpoint.TokenURL, clientID_gitlab, clientSecret_gitlab, code, "http://localhost:9956/oauth/gitlab")
+		gitlab.Endpoint.TokenURL, storage.PRIVATE_DATA.GL.ID, storage.PRIVATE_DATA.GL.SECRET, code, "http://localhost:9956/oauth/gitlab")
 	req, err := http.NewRequest(http.MethodPost, reqURL, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "could not create HTTP request: %v", err)
@@ -216,8 +207,8 @@ func GitlabAuthenticationRedirect(w http.ResponseWriter, r *http.Request) {
 
 var google_oauthconf = &oauth2.Config{
 	RedirectURL:  "http://localhost:9956/oauth/google/callback",
-	ClientID:     clientID_google,
-	ClientSecret: clientSecret_google,
+	ClientID:     storage.PRIVATE_DATA.GG.ID,
+	ClientSecret: storage.PRIVATE_DATA.GG.SECRET,
 	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.profile"},
 	Endpoint:     google.Endpoint,
 }
