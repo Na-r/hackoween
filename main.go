@@ -2,7 +2,7 @@ package main
 
 import (
 	"hack-o-ween-site/packages/auth"
-	"hack-o-ween-site/packages/debug"
+	"hack-o-ween-site/packages/error_log"
 	"hack-o-ween-site/packages/puzzle"
 	"hack-o-ween-site/packages/settings"
 	"hack-o-ween-site/packages/storage"
@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 )
 
@@ -55,6 +56,10 @@ func HandleRequests(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	log_file, err := os.OpenFile("logs/" + utils.GetLogTimeString(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	error_log.CheckErr(err, error_log.Fatal, "Couldn't Open Log File")
+	log.SetOutput(log_file)
+
 	http.HandleFunc("/", HandleRequests)
 	http.HandleFunc("/sign-out", auth.SignOutUser)
 	http.HandleFunc("/oauth/github", auth.GithubAuthenticationRedirect)
@@ -65,6 +70,8 @@ func main() {
 
 	puzzle.BindURLs("/alpha", storage.Alpha)
 
-	http.HandleFunc("/debug", debug.DebugButton)
+	// http.HandleFunc("/debug", debug.DebugButton)
+
+	log.Println("Server Started!")
 	http.ListenAndServe(":9956", nil)
 }

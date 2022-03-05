@@ -126,3 +126,7 @@ func HasTimePassed(start_t int64, seconds int) bool {
 	now := time.Now().Unix()
 	return (start_t + int64(seconds)) <= now
 }
+
+func GetLogTimeString() string {
+	return strings.Fields(time.Now().String())[0]
+}
