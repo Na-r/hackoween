@@ -51,5 +51,5 @@ Thumbs.db
 .vscode/
 *.directory
 *.el
-/bin/
-/storage/puzzles/
+bin/
+storage/private.yaml
