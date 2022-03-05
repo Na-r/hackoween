@@ -129,10 +129,11 @@ X  <b>2</b>  X
                 <ul>
                     <li>No two coordinates will be in the same spot.</li>
                     <li>The size of the grid of water you will need to simulate is 100x100.</li>
+                    <li>Any points that exit the grid are completely gone.</li>
                     <li>Each ripple will add exactly one height to the spot it occupies.</li>
                     <li>Ripples will never be blocked by anything.</li>
-                    <li>Once out of the grid, that section of ripple is gone.</li>
                     <li>Ripples can travel over the spots items are initially dropped at.</li>
+                    <li>The point from which an item is dropped <b>does not</b> create a ripple. In other words, step 0 will always have a maximum height of 0; the ripples being created on subsequent steps.</li>
                 </ul>
             </div>
         </div>
