@@ -1,1 +1,32 @@
-2022/03/05 12:58:09 Server Started!
+2022/03/05 14:30:31 Server Started!
+2022/03/05 14:43:19 Server Started!
+2022/03/05 14:47:35 Server Started!
+2022/03/05 14:49:30 Server Started!
+2022/03/05 14:49:33 Server Started!
+2022/03/05 15:04:02 Server Started!
+2022/03/05 15:04:21 Server Started!
+2022/03/05 15:06:42 Server Started!
+2022/03/05 15:07:40 Server Started!
+2022/03/05 15:17:05 Server Started!
+2022/03/05 15:18:16 AUTH_ID: e4826a356cde77dc0555f2d2c8515a6bbf143c7eecd465ef5a16ea09e7304220
+2022/03/05 15:18:16 Name: Luis Martinez
+2022/03/05 15:18:16 Username: Na-r
+2022/03/05 15:18:16 Profile Pic: https://avatars.githubusercontent.com/u/37783605?v=4
+2022/03/05 15:18:16 Session Key: 86f92af5b0fc3e9583a2c126c60de4e605fb0ebf68fba43b31379d3dcc058945
+2022/03/05 15:18:16 Login Date: 2022-03-05
+2022/03/05 15:18:16 Anon Name: Anon#1
+2022/03/05 15:18:34 AUTH_ID: a223b78d8ee974aac13d80a02e0b52b7ef32832b463e1cde59ad9a5cee2e1917
+2022/03/05 15:18:34 Name: Luis Martinez
+2022/03/05 15:18:34 Username: Na-r
+2022/03/05 15:18:34 Profile Pic: https://gitlab.com/uploads/-/system/user/avatar/10585374/avatar.png
+2022/03/05 15:18:34 Session Key: 6ac61abd545a9ea80b1cbdb928c49ba3f2473531753135dc97fc70bb47d6546f
+2022/03/05 15:18:34 Login Date: 2022-03-05
+2022/03/05 15:18:34 Anon Name: Anon#2
+2022/03/05 15:18:55 AUTH_ID: fa887aa2f88c8f032ded6302da6d4d197d8e6e68c75cf9b0525f771e0e698849
+2022/03/05 15:18:55 Name: Nar
+2022/03/05 15:18:55 Username: 
+2022/03/05 15:18:55 Profile Pic: https://lh3.googleusercontent.com/a-/AOh14GiNEIjbIT5VDdSR8mBaLxyPRdNwIgcY1PlNFMny8g=s96-c
+2022/03/05 15:18:55 Session Key: b7b82d6428ebfdd4445e3b8a4a10ebe2780459ef41749e9d802af45786815cad
+2022/03/05 15:18:55 Login Date: 2022-03-05
+2022/03/05 15:18:55 Anon Name: Anon#3
+2022/03/26 05:42:27 http: URL query contains semicolon, which is no longer a supported separator; parts of the query may be stripped when parsed; see golang.org/issue/25192

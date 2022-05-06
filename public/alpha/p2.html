@@ -70,6 +70,13 @@ X    <b>X</b>       // i: 5 | j: 5</pre>
             </div>
         </div>
 
+{{if not .Login}}
+
+        {{template "Login-Check" .}}
+
+{{else}}
+
+
 {{if eq (index .Alpha_Parts 1) 0}}
 
         <div class="block" id="p2_answer">
@@ -127,6 +134,7 @@ X    X</pre>
         </div>
 
     {{end}}
+{{end}}
 {{end}}
     </div>
 </body>

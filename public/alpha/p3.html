@@ -139,6 +139,12 @@ X  <b>2</b>  X
             </div>
         </div>
 
+{{if not .Login}}
+
+        {{template "Login-Check" .}}
+
+{{else}}
+
 {{if eq (index .Alpha_Parts 2) 0}}
 
         <div class="block" id="p3_answer">
@@ -182,6 +188,7 @@ X  <b>2</b>  X
         </div>
 
     {{end}}
+{{end}}
 {{end}}
     </div>
 </body>

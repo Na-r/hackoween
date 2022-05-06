@@ -75,6 +75,12 @@ adbccdbabacdadbc        //2 - 12 = -10</pre>
             </div>
         </div>
 
+{{if not .Login}}
+
+        {{template "Login-Check" .}}
+
+{{else}}
+
 {{if eq (index .Alpha_Parts 0) 0}}
 
         <div class="block" id="p1_answer">
@@ -128,6 +134,7 @@ adbccdbabacdadbc        //2 - 12 = -10</pre>
         </div>
 
     {{end}}
+{{end}}
 {{end}}
     </div>
 </body>
