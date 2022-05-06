@@ -7,3 +7,4 @@ gl:
 gg:
     id: GG_id
     secret: GG_secret
+auth_salt: SALT

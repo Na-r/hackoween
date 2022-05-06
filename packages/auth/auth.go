@@ -276,7 +276,7 @@ func GoogleAuthenticationCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 const AUTH_DATABASE = storage.DB
-const AUTH_ID_SALT = "P7HWnM!J#q5!D2y"
+var AUTH_ID_SALT = storage.PRIVATE_DATA.AUTH_SALT
 
 func hashAuthID(auth_id_raw string) string {
 	return ToSHA(auth_id_raw + AUTH_ID_SALT)

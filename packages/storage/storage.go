@@ -51,6 +51,7 @@ type PrivateDataStruct struct {
 		ID string `yaml:"id"`
 		SECRET string `yaml:"secret"`
 	}
+	AUTH_SALT string
 }
 
 var PRIVATE_DATA PrivateDataStruct
